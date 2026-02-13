@@ -80,6 +80,9 @@ export default function Layout({ children }: LayoutProps) {
           <Link href="/roles" className={navClass("/roles")}>
             Roles
           </Link>
+          <Link href="/schedules" className={navClass("/schedules")}>
+            Schedules
+          </Link>
           <Link href="/rooms" className={navClass("/rooms")}>
             Rooms
           </Link>
