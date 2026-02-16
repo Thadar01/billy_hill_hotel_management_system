@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 
-
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date");   // daily
@@ -25,7 +23,14 @@ export async function GET(req: NextRequest) {
 
   const [rows] = await pool.query<RowDataPacket[]>(
     `
-    SELECT s.*, st.staff_name
+    SELECT 
+      s.*, 
+      st.staff_name,
+      DATE_FORMAT(s.schedule_date, '%Y-%m-%d') as schedule_date,
+      TIME_FORMAT(s.start_time, '%H:%i:%s') as start_time,
+      TIME_FORMAT(s.end_time, '%H:%i:%s') as end_time,
+      DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') as created_at,
+      DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') as updated_at
     FROM staff_schedules s
     JOIN staffs st ON st.staff_id = s.staff_id
     ${where}
