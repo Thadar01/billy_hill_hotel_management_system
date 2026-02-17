@@ -1,6 +1,52 @@
 // app/api/schedules/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { RowDataPacket } from "mysql2";
+
+
+// app/api/schedules/[id]/route.ts (add this GET function to the existing file)
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+        s.schedule_id,
+        s.staff_id,
+        st.staff_name,
+        DATE_FORMAT(s.schedule_date, '%Y-%m-%d') as schedule_date,
+        TIME_FORMAT(s.start_time, '%H:%i:%s') as start_time,
+        TIME_FORMAT(s.end_time, '%H:%i:%s') as end_time,
+        s.break_minutes,
+        s.shift_type,
+        s.status,
+        DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') as created_at,
+        DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') as updated_at
+       FROM staff_schedules s
+       JOIN staffs st ON st.staff_id = s.staff_id
+       WHERE s.schedule_id = ?`,
+      [id]
+    );
+
+    if (!rows || rows.length === 0) {
+      return NextResponse.json(
+        { error: "Schedule not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ schedule: rows[0] });
+  } catch (error) {
+    console.error("Error fetching schedule:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch schedule" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PUT(
   req: NextRequest,

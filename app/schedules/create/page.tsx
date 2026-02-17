@@ -8,6 +8,7 @@ interface Staff {
 }
 
 // Helper function to get dates based on start date and selected weekdays
+// Helper function to get dates based on start date and selected weekdays
 function getDatesFromWeekdays(startDate: string, days: string[]): string[] {
   if (!startDate || days.length === 0) return [];
   
@@ -20,8 +21,8 @@ function getDatesFromWeekdays(startDate: string, days: string[]): string[] {
   // Convert selected day names to numbers
   const selectedDayNumbers = days.map(day => dayMap[day]);
   
-  // Generate dates for the next 4 weeks (or adjust as needed)
-  for (let week = 0; week < 4; week++) {
+  // CHANGE THIS: from 4 weeks to 1 week
+  for (let week = 0; week < 1; week++) {
     for (const dayNum of selectedDayNumbers) {
       const date = new Date(start);
       // Calculate days to add to reach the next occurrence of the selected day
