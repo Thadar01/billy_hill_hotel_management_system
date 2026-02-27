@@ -1,43 +1,41 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Layout from "../components/Layout";
-import { format, addDays, parseISO } from 'date-fns';
 
-interface Schedule {
-  schedule_id: number;
-  staff_id: string;
-  staff_name: string;
-  schedule_date: string;
-  start_time: string;
-  end_time: string;
-  break_minutes: number;
-  shift_type: "morning" | "evening" | "night" | null;
-  status: "scheduled" | "off" | "leave" | "in progress" | "finish";
+import {
+  getWeekDates,
+  formatDateKey,
+  formatDateDisplay,
+  formatDateLong,
+  formatShiftTime,
+} from "./utils";
+import {
+  Schedule,
+  Shift,
+  WeekSchedule,
+ 
+} from "./type";
+
+
+
+interface ApiResponse {
+  schedules: Schedule[];
 }
 
-interface WeekSchedule {
-  staff_id: string;
-  staff_name: string;
-  shifts: {
-    [date: string]: {
-      schedule_id?: number;
-      start_time: string;
-      end_time: string;
-      break_minutes: number;
-      shift_type: string | null;
-      status: string | null;
-    } | null;
-  };
+interface ErrorResponse {
+  error: string;
 }
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [weekStart, setWeekStart] = useState("2026-02-13");
+  const today = new Date();
+const formattedToday = today.toISOString().split("T")[0];
+
+const [weekStart, setWeekStart] = useState(formattedToday);
+
   const [loading, setLoading] = useState(true);
   const [filterShift, setFilterShift] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedStaff, setSelectedStaff] = useState<WeekSchedule | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<{
@@ -57,7 +55,12 @@ export default function SchedulesPage() {
       try {
         console.log("Fetching schedules for week:", weekStart);
         const res = await fetch(`/api/schedules?week=${weekStart}`);
-        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data: ApiResponse = await res.json();
         console.log("Raw API response:", data);
 
         if (data.schedules && data.schedules.length > 0) {
@@ -71,8 +74,8 @@ export default function SchedulesPage() {
           setSchedules(data.schedules || []);
           setLoading(false);
         }
-      } catch (err) {
-        console.error(err);
+      } catch (err: unknown) {
+        console.error("Error fetching schedules:", err);
         if (isMounted) setLoading(false);
       }
     };
@@ -80,40 +83,9 @@ export default function SchedulesPage() {
     return () => { isMounted = false; };
   }, [weekStart]);
 
-  const getWeekDates = (startDate: string): string[] => {
-    const dates: string[] = [];
-    const start = parseISO(startDate);
 
-    for (let i = 0; i < 7; i++) {
-      const date = addDays(start, i);
-      dates.push(format(date, 'yyyy-MM-dd'));
-    }
-
-    return dates;
-  };
 
   // Extract YYYY-MM-DD from ISO date string
-  const formatDateKey = (dateStr: string): string => {
-    if (dateStr.includes('T')) {
-      return dateStr.split('T')[0];
-    }
-    return dateStr;
-  };
-
-  const formatDateDisplay = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    return `${days[date.getUTCDay()]} ${month}/${day}`;
-  };
-
-  const formatDateLong = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    return `${days[date.getUTCDay()]}, ${months[date.getUTCMonth()]} ${day}, ${year}`;
-  };
 
   const weekDates = getWeekDates(weekStart);
 
@@ -127,107 +99,53 @@ export default function SchedulesPage() {
     }
 
     const dateKey = formatDateKey(s.schedule_date);
+    const staffSchedule = staffMap.get(s.staff_id);
 
-    staffMap.get(s.staff_id)!.shifts[dateKey] = {
-      schedule_id: s.schedule_id,
-      start_time: s.start_time,
-      end_time: s.end_time,
-      break_minutes: s.break_minutes,
-      shift_type: s.shift_type,
-      status: s.status
-    };
+    if (staffSchedule) {
+      staffSchedule.shifts[dateKey] = {
+        id: s.id,
+        start_time: s.planned_start_time,
+        end_time: s.planned_end_time,
+        break_minutes: s.break_minutes,
+        shift_type: s.shift_type,
+        status: s.schedule_status,
+        actual_check_in: s.actual_check_in,
+        actual_check_out: s.actual_check_out,
+        attendance_status: s.attendance_status
+      };
+    }
   });
 
   const weekSchedule = Array.from(staffMap.values()).sort((a, b) => a.staff_name.localeCompare(b.staff_name));
 
   const shiftTypes = ["all", "morning", "evening", "night"];
-  const statusTypes = ["all", "scheduled", "off", "leave", "in progress", "finish"];
 
-  // Convert 24-hour time to 12-hour format with AM/PM
-  const convertTo12HourFormat = (timeStr: string): string => {
-    if (!timeStr) return "--:--";
-    
-    try {
-      const parts = timeStr.split(':');
-      if (parts.length < 2) return timeStr;
-      
-      let hours = parseInt(parts[0], 10);
-      const minutes = parts[1];
-      
-      if (isNaN(hours)) return timeStr;
-      
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12;
-      hours = hours ? hours : 12;
-      
-      return `${hours}:${minutes} ${ampm}`;
-    } catch (error) {
-      console.error("Error converting to 12-hour format:", error);
-      return timeStr;
-    }
-  };
 
-  const formatTimeString = (timeStr: any): string => {
-    if (!timeStr) return "--:--";
 
-    try {
-      if (typeof timeStr === 'string') {
-        if (timeStr.includes(':')) {
-          return convertTo12HourFormat(timeStr);
-        }
-
-        if (timeStr.includes('T')) {
-          const date = new Date(timeStr);
-          if (!isNaN(date.getTime())) {
-            const hours = date.getHours();
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            const hour12 = hours % 12 || 12;
-            return `${hour12}:${minutes} ${ampm}`;
-          }
-        }
-
-        return timeStr;
-      }
-
-      if (timeStr instanceof Date) {
-        const hours = timeStr.getHours();
-        const minutes = timeStr.getMinutes().toString().padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const hour12 = hours % 12 || 12;
-        return `${hour12}:${minutes} ${ampm}`;
-      }
-
-      return String(timeStr);
-    } catch (error) {
-      console.error("Error formatting time:", error);
-      return "--:--";
-    }
-  };
-
-  const formatShiftTime = (start: any, end: any) => {
-    const startStr = formatTimeString(start);
-    const endStr = formatTimeString(end);
-    return `${startStr} - ${endStr}`;
-  };
-
-  const getStatusBadge = (status: string | null) => {
+  const getStatusBadge = (status: string | null): JSX.Element | null => {
     if (!status) return null;
-    
-    switch(status) {
+
+    switch (status) {
       case 'scheduled':
         return <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">Scheduled</span>;
-      case 'off':
-        return <span className="text-xs bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded">Off</span>;
-      case 'leave':
-        return <span className="text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">Leave</span>;
-      case 'in progress':
-        return <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded">In Progress</span>;
-      case 'finish':
-        return <span className="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded">Finish</span>;
+      case 'cancelled':
+        return <span className="text-xs bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded">Cancelled</span>;
+
       default:
-        return null;
+        return <span className="text-xs bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded">{status}</span>;
     }
+  };
+
+  const getAttendanceIndicator = (shift: Shift | null): JSX.Element | null => {
+    if (!shift) return null;
+
+    if (shift.actual_check_in && !shift.actual_check_out) {
+      return <span className="text-xs text-green-600 block">✓ Checked in</span>;
+    }
+    if (shift.actual_check_in && shift.actual_check_out) {
+      return <span className="text-xs text-blue-600 block">✓ Completed</span>;
+    }
+    return null;
   };
 
   // Handle status update
@@ -235,22 +153,33 @@ export default function SchedulesPage() {
     try {
       setUpdating(true);
       const response = await fetch(`/api/schedules/${scheduleId}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          action: 'status',
+          attendance_status: newStatus
+        }),
       });
 
       if (response.ok) {
         // Refresh the schedules
         const res = await fetch(`/api/schedules?week=${weekStart}`);
-        const data = await res.json();
+        const data: ApiResponse = await res.json();
         setSchedules(data.schedules || []);
         setEditingSchedule(null);
+      } else {
+        const errorData: ErrorResponse = await response.json();
+        alert(errorData.error || "Failed to update status");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating status:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("An unknown error occurred");
+      }
     } finally {
       setUpdating(false);
     }
@@ -259,7 +188,7 @@ export default function SchedulesPage() {
   // Handle delete schedule
   const handleDeleteSchedule = async (scheduleId: number) => {
     if (!confirm('Are you sure you want to delete this schedule?')) return;
-    
+
     try {
       const response = await fetch(`/api/schedules/${scheduleId}`, {
         method: 'DELETE',
@@ -268,14 +197,59 @@ export default function SchedulesPage() {
       if (response.ok) {
         // Refresh the schedules
         const res = await fetch(`/api/schedules?week=${weekStart}`);
-        const data = await res.json();
+        const data: ApiResponse = await res.json();
         setSchedules(data.schedules || []);
         setEditingSchedule(null);
+      } else {
+        const errorData: ErrorResponse = await response.json();
+        alert(errorData.error || "Failed to delete schedule");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting schedule:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      }
     }
   };
+
+  const handleViewDetail = (scheduleId: number) => {
+  router.push(`/schedules/${scheduleId}/view`);
+};
+
+  const handleAttendanceAction = async (
+  scheduleId: number,
+  action: "checkin" | "checkout"
+) => {
+  try {
+    const now = new Date().toISOString(); // current time
+
+    const response = await fetch(`/api/schedules/${scheduleId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action,
+        time: now,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      alert(error.error || "Failed to update attendance");
+      return;
+    }
+
+    // Refresh schedules after update
+    const res = await fetch(`/api/schedules?week=${weekStart}`);
+    const data: ApiResponse = await res.json();
+    setSchedules(data.schedules || []);
+  } catch (error) {
+    console.error("Attendance error:", error);
+    alert("Something went wrong");
+  }
+};
+
 
   // Handle edit whole schedule
   const handleEditSchedule = (scheduleId: number) => {
@@ -324,37 +298,16 @@ export default function SchedulesPage() {
               key={shift}
               onClick={() => setFilterShift(shift)}
               className={`px-3 py-1 rounded capitalize ${filterShift === shift
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-black hover:bg-gray-300"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-black hover:bg-gray-300"
                 }`}
             >
               {shift}
             </button>
           ))}
         </div>
-        
-        <div className="flex gap-2 items-center">
-          <span className="font-medium text-black">Filter by status:</span>
-          {statusTypes.map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilterStatus(status)}
-              className={`px-3 py-1 rounded capitalize ${filterStatus === status
-                  ? status === 'all' 
-                    ? "bg-gray-800 text-white" 
-                    : status === 'scheduled' ? "bg-blue-600 text-white"
-                    : status === 'off' ? "bg-gray-600 text-white"
-                    : status === 'leave' ? "bg-yellow-600 text-white"
-                    : status === 'in progress' ? "bg-green-600 text-white"
-                    : status === 'finish' ? "bg-purple-600 text-white"
-                    : "bg-gray-800 text-white"
-                  : "bg-gray-200 text-black hover:bg-gray-300"
-                }`}
-            >
-              {status === 'in progress' ? 'In Progress' : status === 'finish' ? 'Finish' : status}
-            </button>
-          ))}
-        </div>
+
+   
       </div>
 
       {/* Table */}
@@ -377,14 +330,10 @@ export default function SchedulesPage() {
             ) : (
               weekSchedule.map((staff) => {
                 const hasMatchingShift = Object.values(staff.shifts).some(
-                  (shift) => shift && (filterShift === "all" || shift.shift_type === filterShift)
+                  (shift) => shift && (filterShift === "all" || (shift.shift_type || '') === filterShift)
                 );
-                const hasMatchingStatus = Object.values(staff.shifts).some(
-                  (shift) => shift && (filterStatus === "all" || shift.status === filterStatus)
-                );
-                
-                if ((filterShift !== "all" && !hasMatchingShift) || 
-                    (filterStatus !== "all" && !hasMatchingStatus)) return null;
+             
+                if ((filterShift !== "all" && !hasMatchingShift) ) return null;
 
                 return (
                   <tr
@@ -417,6 +366,7 @@ export default function SchedulesPage() {
                               <div className="mt-1">
                                 {getStatusBadge(shift.status)}
                               </div>
+                              {getAttendanceIndicator(shift)}
                             </div>
                           ) : (
                             <span className="text-gray-400">—</span>
@@ -461,12 +411,10 @@ export default function SchedulesPage() {
           <div className="flex items-center gap-1"><div className="w-4 h-4 bg-orange-300 border"></div>Evening</div>
           <div className="flex items-center gap-1"><div className="w-4 h-4 bg-purple-300 border"></div>Night</div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
           <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Scheduled</span>
-          <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Off</span>
-          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Leave</span>
-          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">In Progress</span>
-          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Finish</span>
+          <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Cancelled</span>
+          
         </div>
       </div>
 
@@ -489,7 +437,7 @@ export default function SchedulesPage() {
                 {weekDates.map((date) => {
                   const shift = selectedStaff.shifts[date];
                   const isEditing = editingSchedule?.date === date;
-                  
+
                   return (
                     <div key={date} className="border rounded-lg p-4 bg-gray-50">
                       <div className="flex justify-between items-start">
@@ -497,7 +445,7 @@ export default function SchedulesPage() {
                           <h3 className="text-lg font-semibold text-black">
                             {formatDateLong(date)}
                           </h3>
-                          
+
                           {shift ? (
                             isEditing ? (
                               // Edit mode for status
@@ -505,36 +453,35 @@ export default function SchedulesPage() {
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
                                   <div className="flex flex-wrap gap-2">
-                                    {['scheduled', 'off', 'leave', 'in progress', 'finish'].map((status) => (
+                                    {['scheduled', 'cancelled'].map((status) => (
                                       <button
                                         key={status}
-                                        onClick={() => handleStatusUpdate(shift.schedule_id!, status)}
+                                        onClick={() => handleStatusUpdate(shift.id!, status)}
                                         disabled={updating}
-                                        className={`px-3 py-1 rounded text-sm capitalize ${
-                                          shift.status === status
+                                        className={`px-3 py-1 rounded text-sm capitalize ${shift.status === status
                                             ? status === 'scheduled' ? 'bg-blue-600 text-white'
-                                              : status === 'off' ? 'bg-gray-600 text-white'
-                                              : status === 'leave' ? 'bg-yellow-600 text-white'
-                                              : status === 'in progress' ? 'bg-green-600 text-white'
-                                              : status === 'finish' ? 'bg-purple-600 text-white'
-                                              : 'bg-gray-600 text-white'
+                                              : status === 'cancelled' ? 'bg-gray-600 text-white'
+                                                : status === 'present' ? 'bg-green-600 text-white'
+                                                  : status === 'late' ? 'bg-yellow-600 text-white'
+                                                    : status === 'absent' ? 'bg-red-600 text-white'
+                                                      : 'bg-gray-600 text-white'
                                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                        }`}
+                                          }`}
                                       >
-                                        {status === 'in progress' ? 'In Progress' : status}
+                                        {status}
                                       </button>
                                     ))}
                                   </div>
                                 </div>
                                 <div className="flex gap-2">
                                   <button
-                                    onClick={() => handleEditSchedule(shift.schedule_id!)}
+                                    onClick={() => handleEditSchedule(shift.id!)}
                                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                   >
                                     Edit Full Schedule
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteSchedule(shift.schedule_id!)}
+                                    onClick={() => handleDeleteSchedule(shift.id!)}
                                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                                   >
                                     Delete
@@ -555,11 +502,10 @@ export default function SchedulesPage() {
                                 </p>
                                 <p className="text-black">
                                   <span className="font-medium">Shift Type:</span>{' '}
-                                  <span className={`capitalize px-2 py-1 rounded text-sm ${
-                                    shift.shift_type === 'morning' ? 'bg-blue-100 text-blue-800' :
-                                    shift.shift_type === 'evening' ? 'bg-orange-100 text-orange-800' :
-                                    shift.shift_type === 'night' ? 'bg-purple-100 text-purple-800' : ''
-                                  }`}>
+                                  <span className={`capitalize px-2 py-1 rounded text-sm ${shift.shift_type === 'morning' ? 'bg-blue-100 text-blue-800' :
+                                      shift.shift_type === 'evening' ? 'bg-orange-100 text-orange-800' :
+                                        shift.shift_type === 'night' ? 'bg-purple-100 text-purple-800' : ''
+                                    }`}>
                                     {shift.shift_type || 'Not specified'}
                                   </span>
                                 </p>
@@ -567,13 +513,55 @@ export default function SchedulesPage() {
                                   <span className="font-medium">Status:</span>{' '}
                                   {getStatusBadge(shift.status)}
                                 </p>
+                                {/* <p className="text-black">
+                                  <span className="font-medium">Attendance:</span>{' '}
+                                  {getAttendanceIndicator(shift)}
+                                  {shift.actual_check_in && (
+                                    <span className="text-xs text-gray-600 block">
+                                      In: {formatTimeString(shift.actual_check_in)}
+                                    </span>
+                                  )}
+                                  {shift.actual_check_out && (
+                                    <span className="text-xs text-gray-600 block">
+                                      Out: {formatTimeString(shift.actual_check_out)}
+                                    </span>
+                                  )}
+                                </p> */}
+
+
+                                <div className="flex gap-2 mt-2">
+  {!shift.actual_check_in && (
+    <button
+      onClick={() => handleAttendanceAction(shift.id!, "checkin")}
+      className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+    >
+      Check In
+    </button>
+  )}
+
+  {shift.actual_check_in && !shift.actual_check_out && (
+    <button
+      onClick={() => handleAttendanceAction(shift.id!, "checkout")}
+      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+    >
+      Check Out
+    </button>
+  )}
+</div>
+
                                 <p className="text-black">
                                   <span className="font-medium">Break:</span> {shift.break_minutes} minutes
                                 </p>
                                 <button
+  onClick={() => handleViewDetail(shift.id!)}
+  className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+>
+  View Details
+</button>
+                                <button
                                   onClick={() => setEditingSchedule({
                                     date,
-                                    schedule_id: shift.schedule_id!,
+                                    schedule_id: shift.id!,
                                     start_time: shift.start_time,
                                     end_time: shift.end_time,
                                     break_minutes: shift.break_minutes,
@@ -589,10 +577,10 @@ export default function SchedulesPage() {
                             <p className="text-gray-500 mt-2">No shift scheduled</p>
                           )}
                         </div>
-                        
+
                         {shift && !isEditing && (
                           <div className="text-sm text-gray-500">
-                            ID: {shift.schedule_id}
+                            ID: {shift.id}
                           </div>
                         )}
                       </div>
