@@ -34,7 +34,7 @@ export default function LoginPage() {
       }
 
       setUser(data.staff);
-      router.push("/");
+      router.push("/staff-dashboard");
     } catch {
       setError("Something went wrong");
     }

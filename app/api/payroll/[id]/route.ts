@@ -22,9 +22,11 @@ interface PayrollDetailRow extends RowDataPacket {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const [rows] = await pool.query<PayrollDetailRow[]>(
       `
       SELECT p.*, s.staff_name
@@ -32,7 +34,7 @@ export async function GET(
       JOIN staffs s ON s.staff_id = p.staff_id
       WHERE p.payroll_id = ?
       `,
-      [params.id]
+      [id]
     );
 
     if (rows.length === 0) {
@@ -43,7 +45,6 @@ export async function GET(
     }
 
     return NextResponse.json({ payroll: rows[0] });
-
   } catch (err) {
     console.error(err);
     return NextResponse.json(

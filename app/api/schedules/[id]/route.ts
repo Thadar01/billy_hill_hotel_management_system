@@ -186,12 +186,27 @@ export async function PATCH(
         ]
       );
     }
-    else if (body.action === "checkout") {
-
-  const now = new Date(body.time);
+else if (body.action === "checkout") {
+  const now = body.time ? new Date(body.time) : new Date();
 
   const [schedules] = await pool.query<ScheduleAttendanceRow[]>(
-    "SELECT * FROM schedule_attendance WHERE id = ?",
+    `SELECT 
+       id,
+       staff_id,
+       DATE_FORMAT(schedule_date, '%Y-%m-%d') AS schedule_date,
+       TIME_FORMAT(planned_start_time, '%H:%i:%s') AS planned_start_time,
+       TIME_FORMAT(planned_end_time, '%H:%i:%s') AS planned_end_time,
+       TIME_FORMAT(actual_check_in, '%H:%i:%s') AS actual_check_in,
+       TIME_FORMAT(actual_check_out, '%H:%i:%s') AS actual_check_out,
+       break_minutes,
+       attendance_status,
+       late_minutes,
+       worked_hours,
+       overtime_minutes,
+       schedule_status,
+       shift_type
+     FROM schedule_attendance
+     WHERE id = ?`,
     [id]
   );
 
@@ -211,30 +226,54 @@ export async function PATCH(
     );
   }
 
-  const checkInTime = new Date(schedule.actual_check_in);
-
-  const plannedEnd = new Date(schedule.schedule_date);
-
-  const [endHour, endMinute, endSecond] =
-    schedule.planned_end_time.split(":").map(Number);
-
-  plannedEnd.setHours(endHour, endMinute, endSecond || 0, 0);
-
-  let workedMinutes =
-    Math.floor((now.getTime() - checkInTime.getTime()) / (1000 * 60)) -
-    (schedule.break_minutes || 0);
-
-  if (isNaN(workedMinutes) || workedMinutes < 0) {
-    workedMinutes = 0;
+  if (isNaN(now.getTime())) {
+    return NextResponse.json(
+      { error: "Invalid checkout time" },
+      { status: 400 }
+    );
   }
 
-  const workedHours = Number((workedMinutes / 60).toFixed(2));
+  const rawScheduleDate = String(schedule.schedule_date); // YYYY-MM-DD
+  const rawCheckIn = String(schedule.actual_check_in);    // HH:mm:ss
+
+  const checkInTime = new Date(`${rawScheduleDate}T${rawCheckIn}`);
+
+  if (isNaN(checkInTime.getTime())) {
+    return NextResponse.json(
+      {
+        error: "Invalid checkin time",
+        raw_checkin: rawCheckIn,
+        schedule_date: rawScheduleDate,
+      },
+      { status: 400 }
+    );
+  }
+
+  if (now.getTime() < checkInTime.getTime()) {
+    return NextResponse.json(
+      { error: "Checkout time cannot be earlier than checkin time" },
+      { status: 400 }
+    );
+  }
+
+  const totalWorkedSeconds = Math.floor(
+    (now.getTime() - checkInTime.getTime()) / 1000
+  );
+
+  const breakSeconds = (schedule.break_minutes || 0) * 60;
+
+  const netWorkedSeconds =
+    totalWorkedSeconds > breakSeconds
+      ? totalWorkedSeconds - breakSeconds
+      : totalWorkedSeconds;
+
+  const workedHours = Number((netWorkedSeconds / 3600).toFixed(2));
+
+  const plannedEnd = new Date(`${rawScheduleDate}T${schedule.planned_end_time}`);
 
   const diffMs = now.getTime() - plannedEnd.getTime();
   const overtimeMinutes =
     diffMs > 0 ? Math.floor(diffMs / (1000 * 60)) : 0;
-
-  console.log("Overtime Minutes:", overtimeMinutes);
 
   await pool.query(
     `UPDATE schedule_attendance 
@@ -244,8 +283,14 @@ export async function PATCH(
      WHERE id = ?`,
     [now, workedHours, overtimeMinutes, id]
   );
-}
 
+  return NextResponse.json({
+    message: "checkout successful",
+    id: parseInt(id),
+    worked_hours: workedHours,
+    overtime_minutes: overtimeMinutes,
+  });
+}
     else if (body.action === 'status') {
       const newStatus = body.attendance_status;
 

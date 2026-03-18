@@ -4,9 +4,11 @@ import { ResultSetHeader } from "mysql2";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const [result] = await pool.query<ResultSetHeader>(
       `
       UPDATE payrolls
@@ -15,7 +17,7 @@ export async function PUT(
       WHERE payroll_id = ?
       AND status = 'approved'
       `,
-      [params.id]
+      [id]
     );
 
     if (result.affectedRows === 0) {
@@ -26,7 +28,6 @@ export async function PUT(
     }
 
     return NextResponse.json({ message: "Payroll paid successfully" });
-
   } catch (err) {
     console.error(err);
     return NextResponse.json(
