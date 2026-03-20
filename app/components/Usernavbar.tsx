@@ -2,15 +2,28 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useCustomerAuthStore } from "@/store/useCustomerAuthStore";
 
 export default function UserNavbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { customer, isAuthenticated, logout, hasHydrated } = useCustomerAuthStore();
 
   const navClass = (path: string) =>
     pathname === path
-      ? "text-blue-600 font-semibold"
+      ? "font-semibold text-blue-600"
       : "text-gray-700 hover:text-blue-600";
+
+  const handleLogout = () => {
+    const confirmed = window.confirm("Are you sure you want to logout?");
+    if (!confirmed) return;
+
+    logout();
+    alert("Logged out successfully.");
+    router.push("/user-home");
+  };
+
+  if (!hasHydrated) return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -29,7 +42,7 @@ export default function UserNavbar() {
           <Link href="/premium-services" className={navClass("/premium-services")}>
             Services
           </Link>
-         <Link href="/about-us" className={navClass("/about-us")}>
+          <Link href="/about-us" className={navClass("/about-us")}>
             About Us
           </Link>
           <Link href="/privacy-policy" className={navClass("/privacy-policy")}>
@@ -47,14 +60,37 @@ export default function UserNavbar() {
           >
             Back
           </button>
+
+          {isAuthenticated && customer ? (
+            <>
+              <button
+                onClick={() => router.push("/user-profile")}
+                className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-left text-sm hover:bg-gray-100"
+              >
+                <div className="font-medium text-black">{customer.fullName}</div>
+                <div className="text-xs text-gray-500">
+                  Points: {customer.points}
+                </div>
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => router.push("/user-login")}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              Sign In
+            </button>
+          )}
+
           <button
-            onClick={() => router.push("/rooms")}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            Sign In
-          </button>
-          <button
-            onClick={() => router.push("/rooms")}
+            onClick={() => router.push("/user-rooms")}
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
             Book Now
