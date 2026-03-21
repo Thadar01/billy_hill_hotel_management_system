@@ -18,6 +18,7 @@ interface Room {
   person: number;
   bathroom: number;
   isPetAllowed: boolean;
+  isBalcony:boolean;
   images: string[];
 }
 

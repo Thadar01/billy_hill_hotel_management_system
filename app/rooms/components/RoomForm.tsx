@@ -17,6 +17,7 @@ export interface RoomFormData {
   person: number | string;
   bathroom: number | string;
   isPetAllowed: boolean;
+  isBalcony: boolean;
   roomStatus?: string; // Added roomStatus
   images?: string[];
 }
@@ -42,6 +43,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
     person: initialData?.person || "",
     bathroom: initialData?.bathroom || "",
     isPetAllowed: initialData?.isPetAllowed || false,
+        isBalcony: initialData?.isBalcony || false,
     roomStatus: initialData?.roomStatus || "available",
   });
 
@@ -319,6 +321,19 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
             />
             <label htmlFor="isPetAllowed" className="ml-2 block text-sm text-gray-700">
               Pets Allowed
+            </label>
+          </div>
+            <div className="flex items-center">
+            <input
+              type="checkbox"
+              name="isBalcony"
+              id="isBalcony"
+              checked={formData.isBalcony}
+              onChange={handleChange}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="isBalcony" className="ml-2 block text-sm text-gray-700">
+              Blcony Contain
             </label>
           </div>
         </div>

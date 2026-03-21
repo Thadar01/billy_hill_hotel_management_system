@@ -19,26 +19,113 @@ interface Room extends RowDataPacket {
   person: number;
   bathroom: number;
   isPetAllowed: number;
+  isBalcony: number;
 }
 
 interface RoomImage extends RowDataPacket {
+  roomID: string;
   image_url: string;
+}
+
+interface RoomDiscountRow extends RowDataPacket {
+  roomID: string;
+  discountID: number;
+  discountName: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  description: string | null;
+  isActive: number;
+  createdAt: string;
+}
+
+function calculateFinalPrice(
+  originalPrice: number,
+  discount: RoomDiscountRow | null
+): number {
+  if (!discount) return originalPrice;
+
+  let finalPrice = originalPrice;
+
+  if (discount.discountType === "percentage") {
+    finalPrice =
+      originalPrice - (originalPrice * Number(discount.discountValue)) / 100;
+  } else if (discount.discountType === "fixed") {
+    finalPrice = originalPrice - Number(discount.discountValue);
+  }
+
+  if (finalPrice < 0) return 0;
+
+  return Number(finalPrice.toFixed(2));
 }
 
 export async function GET() {
   try {
     const [rooms] = await pool.query<Room[]>(`SELECT * FROM rooms`);
-    const [images] = await pool.query<RoomImage[]>(`SELECT * FROM room_images`);
+    const [images] = await pool.query<RoomImage[]>(
+      `SELECT roomID, image_url FROM room_images`
+    );
 
-    const formattedRooms = rooms.map(room => ({
-      ...room,
-      isPetAllowed: Boolean(room.isPetAllowed),
-      images: images.filter(img => img.roomID === room.roomID).map(img => img.image_url),
-    }));
+    const [activeDiscounts] = await pool.query<RoomDiscountRow[]>(
+      `
+      SELECT
+        dr.roomID,
+        d.discountID,
+        d.discountName,
+        d.discountType,
+        d.discountValue,
+        d.startDate,
+        d.endDate,
+        d.description,
+        d.isActive,
+        d.createdAt
+      FROM discount_rooms dr
+      INNER JOIN discounts d ON dr.discountID = d.discountID
+      WHERE d.isActive = 1
+        AND NOW() BETWEEN d.startDate AND d.endDate
+      ORDER BY d.discountID DESC
+      `
+    );
+
+    const formattedRooms = rooms.map((room) => {
+      const roomImages = images
+        .filter((img) => img.roomID === room.roomID)
+        .map((img) => img.image_url);
+
+      const activeDiscount =
+        activeDiscounts.find((discount) => discount.roomID === room.roomID) ||
+        null;
+
+      return {
+        ...room,
+        isPetAllowed: Boolean(room.isPetAllowed),
+        isBalcony: Boolean(room.isBalcony),
+        images: roomImages,
+        activeDiscount: activeDiscount
+          ? {
+              discountID: activeDiscount.discountID,
+              discountName: activeDiscount.discountName,
+              discountType: activeDiscount.discountType,
+              discountValue: activeDiscount.discountValue,
+              startDate: activeDiscount.startDate,
+              endDate: activeDiscount.endDate,
+              description: activeDiscount.description,
+              isActive: Boolean(activeDiscount.isActive),
+              createdAt: activeDiscount.createdAt,
+            }
+          : null,
+        finalPrice: calculateFinalPrice(Number(room.price), activeDiscount),
+      };
+    });
 
     return NextResponse.json(formattedRooms);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch rooms" }, { status: 500 });
+    console.error("Failed to fetch rooms:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch rooms" },
+      { status: 500 }
+    );
   }
 }
 
@@ -63,6 +150,7 @@ export async function POST(req: NextRequest) {
       person,
       bathroom,
       isPetAllowed,
+      isBalcony
     } = fields;
 
     // Validate required fields
@@ -84,8 +172,8 @@ export async function POST(req: NextRequest) {
 
     // Insert room with proper parsing and validation
     await pool.query(
-      `INSERT INTO rooms (roomID, roomNumber, roomType, description, price, floor, roomSize, bed, person, bathroom, isPetAllowed, roomStatus)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO rooms (roomID, roomNumber, roomType, description, price, floor, roomSize, bed, person, bathroom, isPetAllowed,isBalcony, roomStatus)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
       [
         roomID,
         roomNumber,
@@ -98,6 +186,7 @@ export async function POST(req: NextRequest) {
         parseInt(person) || 1,
         parseInt(bathroom) || 1,
         isPetAllowed === 'true' ? 1 : 0,
+        isBalcony === 'true' ? 1 : 0,
         'available' // Default status
       ]
     );

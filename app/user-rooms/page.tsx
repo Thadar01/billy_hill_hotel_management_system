@@ -1,11 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import RoomCard from "../rooms/components/RoomCard";
+
 import UserLayout from "../components/UserLayout";
 import UserRoomCard from "../rooms/components/UserRoomCard";
+
+interface ActiveDiscount {
+  discountID: number;
+  discountName: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
 
 interface Room {
   roomID: string;
@@ -13,6 +23,7 @@ interface Room {
   roomType: string;
   description: string;
   price: number;
+  finalPrice: number;
   roomStatus: string;
   floor: number;
   roomSize: number;
@@ -20,8 +31,11 @@ interface Room {
   person: number;
   bathroom: number;
   isPetAllowed: boolean;
+  isBalcony: boolean;
   images: string[];
+  activeDiscount: ActiveDiscount | null;
 }
+
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -47,15 +61,6 @@ export default function RoomsPage() {
 
 
 
-  const handleStatusChange = (roomID: string, newStatus: string) => {
-    setRooms(prevRooms => 
-      prevRooms.map(room => 
-        room.roomID === roomID 
-          ? { ...room, roomStatus: newStatus }
-          : room
-      )
-    );
-  };
 
   if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   if (error) return <div className="text-red-500 text-center">{error}</div>;

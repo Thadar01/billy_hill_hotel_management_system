@@ -4,8 +4,19 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Pencil, Trash2, Users, Bed, Bath, Maximize, PawPrint, MapPin } from "lucide-react";
+import { ArrowLeft, Pencil, Users, Bed, Bath, Maximize, PawPrint, MapPin } from "lucide-react";
 import UserLayout from "@/app/components/UserLayout";
+interface ActiveDiscount {
+  discountID: number;
+  discountName: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
 
 interface Room {
   roomID: string;
@@ -13,6 +24,7 @@ interface Room {
   roomType: string;
   description: string;
   price: number;
+  finalPrice: number;
   roomStatus: string;
   floor: number;
   roomSize: number;
@@ -20,8 +32,11 @@ interface Room {
   person: number;
   bathroom: number;
   isPetAllowed: boolean;
+    isBalcony: boolean;
   images: string[];
+  activeDiscount: ActiveDiscount | null;
 }
+
 
 export default function RoomDetailPage() {
   const params = useParams();
@@ -48,22 +63,12 @@ export default function RoomDetailPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this room?")) return;
 
-    try {
-      const response = await fetch(`/api/rooms/${params.roomID}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete");
-      router.push("/rooms");
-    } catch (err) {
-      alert("Failed to delete room");
-    }
-  };
 
   if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   if (error || !room) return <div className="text-red-500 text-center">{error || "Room not found"}</div>;
+const hasDiscount =
+    room.activeDiscount && Number(room.finalPrice) < Number(room.price);
 
   return (
     <UserLayout>
@@ -125,10 +130,20 @@ export default function RoomDetailPage() {
               <h1 className="text-3xl font-bold mb-2">Room {room.roomNumber}</h1>
               <p className="text-gray-600 text-lg">{room.roomType}</p>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-blue-600">${room.price}</p>
-              <p className="text-gray-500">per night</p>
-            </div>
+                  <div className="text-right">
+                {hasDiscount ? (
+                  <>
+                    <p className="text-lg text-gray-400 line-through">${room.price}</p>
+                    <p className="text-3xl font-bold text-red-600">${room.finalPrice}</p>
+                    <p className="text-gray-500">per night</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-3xl font-bold text-blue-600">${room.price}</p>
+                    <p className="text-gray-500">per night</p>
+                  </>
+                )}
+              </div>
           </div>
 
           <div className="mb-6">
@@ -174,6 +189,13 @@ export default function RoomDetailPage() {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <PawPrint className="text-blue-600 mb-2" size={24} />
                 <p className="text-sm text-gray-600">Pets</p>
+                <p className="font-semibold">Allowed</p>
+              </div>
+            )}
+            {room.isBalcony && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <PawPrint className="text-blue-600 mb-2" size={24} />
+                <p className="text-sm text-gray-600">Balcony</p>
                 <p className="font-semibold">Allowed</p>
               </div>
             )}

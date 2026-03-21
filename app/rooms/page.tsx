@@ -6,12 +6,25 @@ import { Plus } from "lucide-react";
 import RoomCard from "./components/RoomCard";
 import Layout from "../components/Layout";
 
+interface ActiveDiscount {
+  discountID: number;
+  discountName: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
 interface Room {
   roomID: string;
   roomNumber: string;
   roomType: string;
   description: string;
   price: number;
+  finalPrice: number;
   roomStatus: string;
   floor: number;
   roomSize: number;
@@ -19,7 +32,9 @@ interface Room {
   person: number;
   bathroom: number;
   isPetAllowed: boolean;
+  isBalcony: boolean;
   images: string[];
+  activeDiscount: ActiveDiscount | null;
 }
 
 export default function RoomsPage() {

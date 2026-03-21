@@ -4,12 +4,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { Eye, Users, Bed, Bath, PawPrint, Check, X, Wrench, Sparkles } from "lucide-react";
 
+interface ActiveDiscount {
+  discountID: number;
+  discountName: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
 interface Room {
   roomID: string;
   roomNumber: string;
   roomType: string;
   description: string;
   price: number;
+  finalPrice: number;
   roomStatus: string;
   floor: number;
   roomSize: number;
@@ -17,7 +29,9 @@ interface Room {
   person: number;
   bathroom: number;
   isPetAllowed: boolean;
+  isBalcony:boolean;
   images: string[];
+  activeDiscount: ActiveDiscount | null;
 }
 
 interface UserRoomCardProps {
@@ -50,7 +64,8 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
 
   const config =
     statusConfig[room.roomStatus as keyof typeof statusConfig] || statusConfig.available;
-
+  const hasDiscount =
+    room.activeDiscount && Number(room.finalPrice) < Number(room.price);
   const Icon = config.icon;
 
   return (
@@ -85,8 +100,47 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
             <h3 className="text-lg font-semibold">Room {room.roomNumber}</h3>
             <p className="text-sm text-gray-600">{room.roomType}</p>
           </div>
-          <p className="text-xl font-bold text-blue-600">${room.price}/night</p>
-        </div>
+<div className="text-right">
+            {hasDiscount ? (
+              <>
+                <p className="text-sm text-gray-400 line-through">
+                  ${room.price}/night
+                </p>
+                <p className="text-xl font-bold text-red-600">
+                  ${room.finalPrice}/night
+                </p>
+              </>
+            ) : (
+              <p className="text-xl font-bold text-blue-600">
+                ${room.price}/night
+              </p>
+            )}
+          </div>        </div>
+          {hasDiscount && room.activeDiscount && (
+          <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-semibold text-red-700">
+                  {room.activeDiscount.discountName}
+                </p>
+                <p className="text-xs text-red-600">
+                  {room.activeDiscount.discountType === "percentage"
+                    ? `${room.activeDiscount.discountValue}% off`
+                    : `$${room.activeDiscount.discountValue} off`}
+                </p>
+                {room.activeDiscount.description && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {room.activeDiscount.description}
+                  </p>
+                )}
+              </div>
+
+              <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                Discount Active
+              </span>
+            </div>
+          </div>
+        )}
 
         <p className="mb-3 line-clamp-2 text-sm text-gray-600">{room.description}</p>
 
@@ -108,6 +162,14 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
             <div className="flex items-center gap-1 text-gray-600">
               <PawPrint size={16} />
               <span>Pets Allowed</span>
+            </div>
+          )}
+
+          
+          {room.isBalcony && (
+            <div className="flex items-center gap-1 text-gray-600">
+              <PawPrint size={16} />
+              <span>Balcony Allow</span>
             </div>
           )}
         </div>
