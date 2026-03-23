@@ -39,6 +39,9 @@ export default function UserNavbar() {
           <Link href="/user-rooms" className={navClass("/user-rooms")}>
             Rooms
           </Link>
+             <Link href="/my-bookings" className={navClass("/my-bookings")}>
+            History
+          </Link>
           <Link href="/premium-services" className={navClass("/premium-services")}>
             Services
           </Link>

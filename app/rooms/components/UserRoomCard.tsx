@@ -29,7 +29,7 @@ interface Room {
   person: number;
   bathroom: number;
   isPetAllowed: boolean;
-  isBalcony:boolean;
+  isBalcony: boolean;
   images: string[];
   activeDiscount: ActiveDiscount | null;
 }
@@ -100,7 +100,7 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
             <h3 className="text-lg font-semibold">Room {room.roomNumber}</h3>
             <p className="text-sm text-gray-600">{room.roomType}</p>
           </div>
-<div className="text-right">
+          <div className="text-right">
             {hasDiscount ? (
               <>
                 <p className="text-sm text-gray-400 line-through">
@@ -116,7 +116,7 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
               </p>
             )}
           </div>        </div>
-          {hasDiscount && room.activeDiscount && (
+        {hasDiscount && room.activeDiscount && (
           <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -165,7 +165,7 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
             </div>
           )}
 
-          
+
           {room.isBalcony && (
             <div className="flex items-center gap-1 text-gray-600">
               <PawPrint size={16} />
@@ -181,6 +181,13 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
           >
             <Eye size={16} />
             View Details
+          </Link>
+
+          <Link
+            href={`/booking?roomID=${room.roomID}`}
+            className="inline-block bg-black text-white px-4 py-2 rounded-lg"
+          >
+            Book Now
           </Link>
         </div>
       </div>
