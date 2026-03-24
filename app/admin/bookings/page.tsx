@@ -29,8 +29,9 @@ function formatMoney(value: number | string) {
   return Number(value || 0).toFixed(2);
 }
 
-function formatDate(value?: string | null) {
+function formatDate(value?: string | null, mounted?: boolean) {
   if (!value) return "-";
+  if (!mounted) return "...";
   return new Date(value).toLocaleDateString();
 }
 
@@ -65,8 +66,10 @@ export default function AdminBookingsPage() {
   const [bookingStatusFilter, setBookingStatusFilter] = useState("all");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("all");
   const [processingID, setProcessingID] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchBookings();
   }, []);
 
@@ -285,7 +288,7 @@ export default function AdminBookingsPage() {
 
                     <td className="px-4 py-3">
                       <div>
-                        {formatDate(booking.checkInDate)} - {formatDate(booking.checkOutDate)}
+                        {formatDate(booking.checkInDate, mounted)} - {formatDate(booking.checkOutDate, mounted)}
                       </div>
                       {(booking.checkInTime || booking.checkOutTime) && (
                         <div className="text-gray-500 text-xs">
@@ -335,7 +338,7 @@ export default function AdminBookingsPage() {
                           <button
                             onClick={() => handleCheckOut(booking.bookingID)}
                             disabled={processingID === booking.bookingID}
-                            className="bg-orange-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                            className="bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
                           >
                             {processingID === booking.bookingID ? "Processing..." : "Check Out"}
                           </button>

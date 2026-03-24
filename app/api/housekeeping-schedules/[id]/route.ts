@@ -162,6 +162,19 @@ export async function PUT(
       );
     }
 
+    // Sync room status based on housekeeping status
+    if (status === "in_progress") {
+      await pool.query(
+        `UPDATE rooms SET roomStatus = 'cleaning' WHERE roomID = ?`,
+        [room_id]
+      );
+    } else if (status === "completed") {
+      await pool.query(
+        `UPDATE rooms SET roomStatus = 'available' WHERE roomID = ?`,
+        [room_id]
+      );
+    }
+
     return NextResponse.json({
       message: "Housekeeping schedule updated successfully",
     });

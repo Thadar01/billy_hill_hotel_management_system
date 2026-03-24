@@ -36,37 +36,15 @@ interface Room {
 
 interface UserRoomCardProps {
   room: Room;
+  checkIn?: string;
+  checkOut?: string;
 }
 
-export default function UserRoomCard({ room }: UserRoomCardProps) {
-  const statusConfig = {
-    available: {
-      color: "bg-green-100 text-green-800",
-      icon: Check,
-      label: "Available",
-    },
-    occupied: {
-      color: "bg-red-100 text-red-800",
-      icon: X,
-      label: "Occupied",
-    },
-    maintenance: {
-      color: "bg-yellow-100 text-yellow-800",
-      icon: Wrench,
-      label: "Maintenance",
-    },
-    cleaning: {
-      color: "bg-blue-100 text-blue-800",
-      icon: Sparkles,
-      label: "Cleaning",
-    },
-  };
+export default function UserRoomCard({ room, checkIn, checkOut }: UserRoomCardProps) {
 
-  const config =
-    statusConfig[room.roomStatus as keyof typeof statusConfig] || statusConfig.available;
+
   const hasDiscount =
     room.activeDiscount && Number(room.finalPrice) < Number(room.price);
-  const Icon = config.icon;
 
   return (
     <div className="overflow-hidden rounded-lg bg-white shadow-lg transition-shadow hover:shadow-xl">
@@ -84,14 +62,7 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
           </div>
         )}
 
-        <div className="absolute top-2 right-2 z-10">
-          <span
-            className={`${config.color} flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm`}
-          >
-            <Icon size={14} />
-            {config.label}
-          </span>
-        </div>
+
       </div>
 
       <div className="p-4">
@@ -176,7 +147,7 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
 
         <div className="mt-4 flex gap-2">
           <Link
-            href={`/user-rooms/${room.roomID}`}
+            href={`/user-rooms/${room.roomID}${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}` : ""}`}
             className="flex-1 rounded-lg bg-gray-100 px-3 py-2 text-gray-700 transition-colors hover:bg-gray-200 flex items-center justify-center gap-2"
           >
             <Eye size={16} />
@@ -184,7 +155,7 @@ export default function UserRoomCard({ room }: UserRoomCardProps) {
           </Link>
 
           <Link
-            href={`/booking?roomID=${room.roomID}`}
+            href={`/booking?roomID=${room.roomID}${checkIn && checkOut ? `&checkIn=${checkIn}&checkOut=${checkOut}` : ""}`}
             className="inline-block bg-black text-white px-4 py-2 rounded-lg"
           >
             Book Now

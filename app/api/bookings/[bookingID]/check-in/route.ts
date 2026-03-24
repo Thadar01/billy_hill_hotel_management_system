@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2/promise";
+import { recalculateBookingAmounts } from "@/lib/bookingHelpers";
 
 export async function PATCH(
   _req: NextRequest,
@@ -15,7 +16,7 @@ export async function PATCH(
 
     const [bookingRows] = await connection.query<RowDataPacket[]>(
       `
-      SELECT bookingID, bookingStatus
+      SELECT bookingID, bookingStatus, customerID, balanceAmount
       FROM bookings
       WHERE bookingID = ?
       `,
@@ -95,6 +96,61 @@ export async function PATCH(
       `,
       [bookingID]
     );
+
+    // Reward 10 points for checking in
+    const pointsToReward = 40;
+    if (booking.customerID) {
+      await connection.query(
+        `
+        INSERT INTO point_transactions (
+          customerID,
+          bookingID,
+          type,
+          points,
+          description
+        )
+        VALUES (?, ?, 'earn', ?, ?)
+        `,
+        [
+          booking.customerID,
+          bookingID,
+          pointsToReward,
+          `Earned points for check-in on booking ${bookingID}`,
+        ]
+      );
+
+      await connection.query(
+        `
+        UPDATE customers
+        SET points = points + ?
+        WHERE customerID = ?
+        `,
+        [pointsToReward, booking.customerID]
+      );
+    }
+
+    // Auto-pay remaining balance if any
+    const balance = Number(booking.balanceAmount || 0);
+    if (balance > 0) {
+      await connection.query(
+        `
+        INSERT INTO payments (
+          bookingID,
+          amount,
+          paymentMethod,
+          paymentType,
+          paymentStatus,
+          paidAt,
+          note
+        )
+        VALUES (?, ?, 'cash', 'balance', 'paid', NOW(), 'Auto-paid remaining balance via cash upon check-in')
+        `,
+        [bookingID, balance]
+      );
+
+      // Recalculate booking totals to reflect the new payment
+      await recalculateBookingAmounts(connection, bookingID);
+    }
 
     await connection.commit();
 

@@ -32,45 +32,11 @@ export async function PATCH(
 
     const booking = bookingRows[0];
 
-    if (booking.bookingStatus !== "confirmed") {
+    if (booking.bookingStatus !== "checked_in") {
       await connection.rollback();
       return NextResponse.json(
         {
-          error: `Only confirmed bookings can be checked in. Current status: ${booking.bookingStatus}`,
-        },
-        { status: 400 }
-      );
-    }
-
-    const [roomRows] = await connection.query<RowDataPacket[]>(
-      `
-      SELECT br.roomID, r.roomStatus
-      FROM booking_rooms br
-      INNER JOIN rooms r ON br.roomID = r.roomID
-      WHERE br.bookingID = ?
-      `,
-      [bookingID]
-    );
-
-    if (roomRows.length === 0) {
-      await connection.rollback();
-      return NextResponse.json(
-        { error: "No rooms found for this booking" },
-        { status: 400 }
-      );
-    }
-
-    const blockedRooms = roomRows.filter(
-      (room) => room.roomStatus === "maintenance"
-    );
-
-    if (blockedRooms.length > 0) {
-      await connection.rollback();
-      return NextResponse.json(
-        {
-          error: `Some rooms cannot be checked in because they are under maintenance: ${blockedRooms
-            .map((r) => r.roomID)
-            .join(", ")}`,
+          error: `Only checked-in bookings can be checked out. Current status: ${booking.bookingStatus}`,
         },
         { status: 400 }
       );
@@ -79,18 +45,19 @@ export async function PATCH(
     await connection.query(
       `
       UPDATE bookings
-      SET bookingStatus = 'checked_in',
-          actualCheckInAt = NOW()
+      SET bookingStatus = 'checked_out',
+          actualCheckOutAt = NOW()
       WHERE bookingID = ?
       `,
       [bookingID]
     );
 
+    // Update rooms to 'check-out' status
     await connection.query(
       `
       UPDATE rooms r
       INNER JOIN booking_rooms br ON r.roomID = br.roomID
-      SET r.roomStatus = 'occupied'
+      SET r.roomStatus = 'check-out'
       WHERE br.bookingID = ?
       `,
       [bookingID]
@@ -99,17 +66,17 @@ export async function PATCH(
     await connection.commit();
 
     return NextResponse.json({
-      message: "Checked in successfully",
+      message: "Checked out successfully",
       bookingID,
-      bookingStatus: "checked_in",
+      bookingStatus: "checked_out",
     });
   } catch (error) {
     await connection.rollback();
-    console.error("Check-in error:", error);
+    console.error("Check-out error:", error);
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to check in",
+        error: error instanceof Error ? error.message : "Failed to check out",
       },
       { status: 500 }
     );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Pencil, Users, Bed, Bath, Maximize, PawPrint, MapPin } from "lucide-react";
@@ -41,6 +41,9 @@ interface Room {
 export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const checkIn = searchParams.get("checkIn");
+  const checkOut = searchParams.get("checkOut");
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -146,15 +149,7 @@ const hasDiscount =
               </div>
           </div>
 
-          <div className="mb-6">
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-              room.roomStatus === 'available' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {room.roomStatus}
-            </span>
-          </div>
+
 
           <p className="text-gray-700 mb-6">{room.description}</p>
 
@@ -204,7 +199,7 @@ const hasDiscount =
           {/* Actions */}
           <div className="flex gap-4">
             <Link
-              href={`/books/${room.roomID}`}
+              href={`/booking?roomID=${room.roomID}${checkIn && checkOut ? `&checkIn=${checkIn}&checkOut=${checkOut}` : ""}`}
               className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700"
             >
               <Pencil size={20} />

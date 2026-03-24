@@ -60,9 +60,39 @@ function calculateFinalPrice(
   return Number(finalPrice.toFixed(2));
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const [rooms] = await pool.query<Room[]>(`SELECT * FROM rooms`);
+    const { searchParams } = new URL(req.url);
+    const checkIn = searchParams.get("checkIn") || new Date().toISOString().split("T")[0];
+    const checkOut = searchParams.get("checkOut") || new Date(Date.now() + 86400000).toISOString().split("T")[0];
+    const isAdmin = searchParams.get("admin") === "true";
+
+    const today = new Date().toISOString().split("T")[0];
+
+    let queryStr = "";
+    let queryParams: any[] = [];
+
+    if (isAdmin) {
+      queryStr = `SELECT * FROM rooms r`;
+      queryParams = [];
+    } else {
+      queryStr = `
+        SELECT * FROM rooms r
+        WHERE r.roomStatus NOT IN ('maintenance')
+          AND (? > ? OR r.roomStatus = 'available')
+          AND r.roomID NOT IN (
+            SELECT br.roomID
+            FROM booking_rooms br
+            INNER JOIN bookings b ON br.bookingID = b.bookingID
+            WHERE b.bookingStatus IN ('pending', 'confirmed', 'checked_in')
+              AND (b.checkInDate < ? AND b.checkOutDate > ?)
+          )
+      `;
+      queryParams = [checkIn, today, checkOut, checkIn];
+    }
+
+    const [rooms] = await pool.query<Room[]>(queryStr, queryParams);
+
     const [images] = await pool.query<RoomImage[]>(
       `SELECT roomID, image_url FROM room_images`
     );

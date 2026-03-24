@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import UserLayout from "../components/UserLayout";
 import { useCustomerAuthStore } from "@/store/useCustomerAuthStore";
+import { useBookingStore } from "@/store/useBookingStore";
 
 interface ActiveDiscount {
   discountID: number;
@@ -64,6 +65,7 @@ export default function BookingPage() {
   const initialRoomID = searchParams.get("roomID");
 
   const { customer } = useCustomerAuthStore();
+  const { setTempBooking } = useBookingStore();
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [services, setServices] = useState<PremiumService[]>([]);
@@ -72,10 +74,13 @@ export default function BookingPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const [checkInDate, setCheckInDate] = useState("");
-  const [checkOutDate, setCheckOutDate] = useState("");
-  const [checkInTime, setCheckInTime] = useState("14:00");
-  const [checkOutTime, setCheckOutTime] = useState("12:00");
+  const initialCheckIn = searchParams.get("checkIn") || "";
+  const initialCheckOut = searchParams.get("checkOut") || "";
+
+  const [checkInDate, setCheckInDate] = useState(initialCheckIn);
+  const [checkOutDate, setCheckOutDate] = useState(initialCheckOut);
+  const [checkInTime, setCheckInTime] = useState("12:00");
+  const [checkOutTime, setCheckOutTime] = useState("11:00");
   const [specialRequest, setSpecialRequest] = useState("");
   const [pointsToUse, setPointsToUse] = useState(0);
   const [taxAmount, setTaxAmount] = useState(0);
@@ -85,14 +90,9 @@ export default function BookingPage() {
     []
   );
 
-  const [paymentMethod, setPaymentMethod] = useState<
-    "cash" | "kbzpay" | "wavepay" | "bank_transfer" | "card"
-  >("cash");
-  const [paymentAmount, setPaymentAmount] = useState(0);
-
   useEffect(() => {
     fetchInitialData();
-  }, []);
+  }, [checkInDate, checkOutDate]);
 
   useEffect(() => {
     if (!initialRoomID || rooms.length === 0) return;
@@ -113,8 +113,10 @@ export default function BookingPage() {
 
   const fetchInitialData = async () => {
     try {
+      const roomsUrl = `/api/rooms${checkInDate && checkOutDate ? `?checkIn=${checkInDate}&checkOut=${checkOutDate}` : ""}`;
+      
       const [roomsRes, servicesRes] = await Promise.all([
-        fetch("/api/rooms"),
+        fetch(roomsUrl),
         fetch("/api/premium-services"),
       ]);
 
@@ -188,6 +190,14 @@ export default function BookingPage() {
       roomSubtotal + serviceSubtotal - safePoints + Number(taxAmount || 0);
     return total > 0 ? total : 0;
   }, [roomSubtotal, serviceSubtotal, pointsToUse, taxAmount, maxPointsUsable]);
+
+  const minDeposit = useMemo(() => {
+    return Number((totalAmount * 0.3).toFixed(2));
+  }, [totalAmount]);
+
+  useEffect(() => {
+    // We don't need to auto-set paymentAmount here anymore
+  }, [minDeposit]);
 
   const addRoom = (roomID: string) => {
     if (!roomID) return;
@@ -320,83 +330,29 @@ export default function BookingPage() {
       return false;
     }
 
-    if (paymentAmount < 0) {
-      alert("Payment amount cannot be negative");
-      return false;
-    }
-
-    if (paymentAmount > totalAmount) {
-      alert("Payment amount cannot exceed total amount");
-      return false;
-    }
-
     return true;
   };
 
-  const handleSubmit = async () => {
-    try {
-      if (!validateBooking()) return;
+  const handleProceedToPayment = () => {
+    if (!validateBooking()) return;
 
-      setSubmitting(true);
+    setTempBooking({
+      checkInDate,
+      checkOutDate,
+      checkInTime,
+      checkOutTime,
+      specialRequest,
+      pointsToUse: Number(pointsToUse) || 0,
+      taxAmount: Number(taxAmount) || 0,
+      rooms: selectedRooms,
+      services: selectedServices,
+      roomSubtotal,
+      serviceSubtotal,
+      totalAmount,
+      minDeposit,
+    });
 
-      const payload = {
-        customerID: customer?.customerID,
-        checkInDate,
-        checkOutDate,
-        checkInTime,
-        checkOutTime,
-        specialRequest,
-        pointsToUse: Number(pointsToUse) || 0,
-        taxAmount: Number(taxAmount) || 0,
-        rooms: selectedRooms,
-        services: selectedServices.map((service) => ({
-          premiumServiceId: service.premiumServiceId,
-          pricingType: service.pricingType,
-          quantity: service.quantity,
-          personCount: service.personCount,
-        })),
-        payment:
-          paymentAmount > 0
-            ? {
-                amount: Number(paymentAmount),
-                paymentMethod,
-                paymentType: "deposit",
-                paymentStatus: "paid",
-              }
-            : null,
-      };
-
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const text = await res.text();
-
-      let data: Record<string, unknown> = {};
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch {
-        throw new Error(`Invalid JSON response from server: ${text}`);
-      }
-
-      if (!res.ok) {
-        throw new Error(
-          typeof data.error === "string" ? data.error : "Failed to create booking"
-        );
-      }
-
-      alert("Booking created successfully");
-      router.push(`/my-bookings`);
-    } catch (error) {
-      console.error(error);
-      alert(error instanceof Error ? error.message : "Booking failed");
-    } finally {
-      setSubmitting(false);
-    }
+    router.push("/booking/payment");
   };
 
   if (loading) {
@@ -447,8 +403,8 @@ export default function BookingPage() {
                   <input
                     type="time"
                     value={checkInTime}
-                    onChange={(e) => setCheckInTime(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    readOnly
+                    className="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-500 cursor-not-allowed"
                   />
                 </div>
 
@@ -457,8 +413,8 @@ export default function BookingPage() {
                   <input
                     type="time"
                     value={checkOutTime}
-                    onChange={(e) => setCheckOutTime(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    readOnly
+                    className="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-500 cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -749,55 +705,12 @@ export default function BookingPage() {
                 <span>${totalAmount.toFixed(2)}</span>
               </div>
 
-              <div className="pt-3 space-y-3">
-                <h3 className="font-semibold">Initial Payment</h3>
-
-                <div>
-                  <label className="block mb-1 font-medium">Payment Method</label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) =>
-                      setPaymentMethod(
-                        e.target.value as
-                          | "cash"
-                          | "kbzpay"
-                          | "wavepay"
-                          | "bank_transfer"
-                          | "card"
-                      )
-                    }
-                    className="w-full border rounded-lg px-3 py-2"
-                  >
-                    <option value="cash">Cash</option>
-                    <option value="kbzpay">KBZPay</option>
-                    <option value="wavepay">WavePay</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="card">Card</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block mb-1 font-medium">Payment Amount</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={totalAmount}
-                    value={paymentAmount}
-                    onChange={(e) =>
-                      setPaymentAmount(
-                        Math.max(0, Math.min(Number(e.target.value), totalAmount))
-                      )
-                    }
-                    className="w-full border rounded-lg px-3 py-2"
-                  />
-                </div>
-
+              <div className="pt-3">
                 <button
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  className="w-full bg-black text-white rounded-lg py-3 font-medium disabled:opacity-50"
+                  onClick={handleProceedToPayment}
+                  className="w-full bg-black text-white rounded-lg py-3 font-medium hover:bg-gray-800 transition-colors"
                 >
-                  {submitting ? "Processing..." : "Confirm Booking"}
+                  Proceed to Payment
                 </button>
               </div>
             </div>

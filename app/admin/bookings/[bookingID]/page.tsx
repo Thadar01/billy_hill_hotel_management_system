@@ -99,8 +99,15 @@ function formatMoney(value: number | string) {
   return Number(value || 0).toFixed(2);
 }
 
-function formatDate(value?: string | null) {
+function formatDate(value?: string | null, mounted?: boolean) {
   if (!value) return "-";
+  if (!mounted) return "..."; // Show placeholder during SSR to avoid mismatch
+  return new Date(value).toLocaleDateString();
+}
+
+function formatDateTime(value?: string | null, mounted?: boolean) {
+  if (!value) return "-";
+  if (!mounted) return "...";
   return new Date(value).toLocaleString();
 }
 
@@ -125,7 +132,11 @@ export default function AdminBookingDetailPage() {
   const [refundRef, setRefundRef] = useState("");
   const [refundNote, setRefundNote] = useState("");
 
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     if (bookingID) {
       fetchDetail();
     }
@@ -267,18 +278,88 @@ export default function AdminBookingDetailPage() {
     }
   };
 
+  const handleCheckIn = async () => {
+    try {
+      const confirmed = window.confirm("Check in this booking?");
+      if (!confirmed) return;
+
+      setIsProcessing(true);
+
+      const res = await fetch(`/api/bookings/${bookingID}/check-in`, {
+        method: "PATCH",
+      });
+
+      const text = await res.text();
+
+      let data: { error?: string; message?: string } = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(`Invalid server response: ${text}`);
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to check in booking");
+      }
+
+      alert(data.message || "Checked in successfully");
+      await fetchDetail();
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "Failed to check in booking");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCheckOut = async () => {
+    try {
+      const confirmed = window.confirm("Check out this booking?");
+      if (!confirmed) return;
+
+      setIsProcessing(true);
+
+      const res = await fetch(`/api/bookings/${bookingID}/check-out`, {
+        method: "PATCH",
+      });
+
+      const text = await res.text();
+
+      let data: { error?: string; message?: string } = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(`Invalid server response: ${text}`);
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to check out booking");
+      }
+
+      alert(data.message || "Checked out successfully");
+      await fetchDetail();
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "Failed to check out booking");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   if (loading) {
-    return <div className="p-6">Loading booking detail...</div>;
+    return <Layout><div className="p-6">Loading booking detail...</div></Layout>;
   }
 
   if (error || !data) {
     return (
-      <div className="p-6">
-        <p className="text-red-500 mb-4">{error || "Booking not found"}</p>
-        <Link href="/admin/bookings" className="border border-black px-4 py-2 rounded-lg">
-          Back to Bookings
-        </Link>
-      </div>
+      <Layout>
+        <div className="p-6">
+          <p className="text-red-500 mb-4">{error || "Booking not found"}</p>
+          <Link href="/admin/bookings" className="border border-black px-4 py-2 rounded-lg">
+            Back to Bookings
+          </Link>
+        </div>
+      </Layout>
     );
   }
 
@@ -295,12 +376,34 @@ export default function AdminBookingDetailPage() {
           </p>
         </div>
 
-        <Link
-          href="/admin/bookings"
-          className="border border-black px-4 py-2 rounded-lg"
-        >
-          Back
-        </Link>
+        <div className="flex gap-3">
+          {booking.bookingStatus === "confirmed" && (
+            <button
+              onClick={handleCheckIn}
+              disabled={isProcessing}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+            >
+              {isProcessing ? "Processing..." : "Check In"}
+            </button>
+          )}
+
+          {booking.bookingStatus === "checked_in" && (
+            <button
+              onClick={handleCheckOut}
+              disabled={isProcessing}
+              className="bg-orange-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+            >
+              {isProcessing ? "Processing..." : "Check Out"}
+            </button>
+          )}
+
+          <Link
+            href="/admin/bookings"
+            className="border border-black px-4 py-2 rounded-lg"
+          >
+            Back
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -375,7 +478,7 @@ export default function AdminBookingDetailPage() {
                         <td className="py-2">{payment.paymentMethod}</td>
                         <td className="py-2">{payment.paymentType}</td>
                         <td className="py-2">{payment.paymentStatus}</td>
-                        <td className="py-2">{formatDate(payment.paidAt)}</td>
+                        <td className="py-2">{formatDateTime(payment.paidAt, mounted)}</td>
                       </tr>
                     ))}
                   </tbody>

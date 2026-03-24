@@ -39,8 +39,9 @@ function formatMoney(value: number | string) {
   return Number(value || 0).toFixed(2);
 }
 
-function formatDate(value?: string | null) {
+function formatDate(value?: string | null, mounted?: boolean) {
   if (!value) return "-";
+  if (!mounted) return "...";
   return new Date(value).toLocaleDateString();
 }
 
@@ -73,8 +74,10 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (!customer?.customerID) {
       setLoading(false);
       return;
@@ -222,11 +225,11 @@ export default function MyBookingsPage() {
                       Booking #{booking.bookingID}
                     </h2>
                     <p className="text-sm text-gray-600 mt-1">
-                      Created: {formatDate(booking.createdAt)}
+                      Created: {formatDate(booking.createdAt, mounted)}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Stay: {formatDate(booking.checkInDate)} -{" "}
-                      {formatDate(booking.checkOutDate)}
+                      Stay: {formatDate(booking.checkInDate, mounted)} -{" "}
+                      {formatDate(booking.checkOutDate, mounted)}
                     </p>
                     {(booking.checkInTime || booking.checkOutTime) && (
                       <p className="text-sm text-gray-600">

@@ -21,6 +21,7 @@ export default function DiscountsPage() {
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   const loadDiscounts = async () => {
     try {
@@ -35,6 +36,7 @@ export default function DiscountsPage() {
   };
 
   useEffect(() => {
+    setMounted(true);
     loadDiscounts();
   }, []);
 
@@ -153,9 +155,9 @@ export default function DiscountsPage() {
                       </td>
 
                       <td className="px-4 py-3 text-sm">
-                        <div>{new Date(discount.startDate).toLocaleString()}</div>
+                        <div>{mounted ? new Date(discount.startDate).toLocaleString() : "..."}</div>
                         <div className="text-gray-500">
-                          to {new Date(discount.endDate).toLocaleString()}
+                          to {mounted ? new Date(discount.endDate).toLocaleString() : "..."}
                         </div>
                       </td>
 

@@ -98,6 +98,14 @@ export default function RoomCard({
       textColor: "text-blue-800",
       hoverColor: "hover:bg-blue-200",
     },
+    "check-out": {
+      color: "bg-purple-100 text-purple-800",
+      icon: Clock,
+      label: "Checked Out",
+      bgColor: "bg-purple-100",
+      textColor: "text-purple-800",
+      hoverColor: "hover:bg-purple-200",
+    },
   };
 
   const config =

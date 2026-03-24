@@ -113,8 +113,9 @@ function formatMoney(value: number | string) {
   return Number(value || 0).toFixed(2);
 }
 
-function formatDate(value?: string | null) {
+function formatDate(value?: string | null, mounted?: boolean) {
   if (!value) return "-";
+  if (!mounted) return "...";
   return new Date(value).toLocaleString();
 }
 
@@ -129,8 +130,10 @@ export default function BookingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cancelling, setCancelling] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (!bookingID) {
       setLoading(false);
       setError("Booking ID is missing");
@@ -333,15 +336,15 @@ export default function BookingDetailPage() {
                 </div>
                 <div>
                   <p className="text-gray-500">Created At</p>
-                  <p className="font-medium">{formatDate(booking.createdAt)}</p>
+                  <p className="font-medium">{formatDate(booking.createdAt, mounted)}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Check-in Date</p>
-                  <p className="font-medium">{formatDate(booking.checkInDate)}</p>
+                  <p className="font-medium">{formatDate(booking.checkInDate, mounted)}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Check-out Date</p>
-                  <p className="font-medium">{formatDate(booking.checkOutDate)}</p>
+                  <p className="font-medium">{formatDate(booking.checkOutDate, mounted)}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Check-in Time</p>
@@ -353,11 +356,11 @@ export default function BookingDetailPage() {
                 </div>
                 <div>
                   <p className="text-gray-500">Actual Check-in</p>
-                  <p className="font-medium">{formatDate(booking.actualCheckInAt)}</p>
+                  <p className="font-medium">{formatDate(booking.actualCheckInAt, mounted)}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Actual Check-out</p>
-                  <p className="font-medium">{formatDate(booking.actualCheckOutAt)}</p>
+                  <p className="font-medium">{formatDate(booking.actualCheckOutAt, mounted)}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Booking Status</p>
