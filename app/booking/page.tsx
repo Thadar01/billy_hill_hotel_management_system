@@ -176,8 +176,8 @@ export default function BookingPage() {
   }, [selectedServices]);
 
   const maxPointsByAmount = useMemo(() => {
-    return Math.floor(roomSubtotal + serviceSubtotal + Number(taxAmount || 0));
-  }, [roomSubtotal, serviceSubtotal, taxAmount]);
+    return Math.floor(serviceSubtotal);
+  }, [serviceSubtotal]);
 
   const maxPointsUsable = useMemo(() => {
     const customerPoints = Number(customer?.points || 0);

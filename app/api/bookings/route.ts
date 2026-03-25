@@ -413,25 +413,6 @@ export async function POST(req: NextRequest) {
     if (Number(pointsToUse) > 0) {
       await connection.query(
         `
-        INSERT INTO point_transactions (
-          customerID,
-          bookingID,
-          type,
-          points,
-          description
-        )
-        VALUES (?, ?, 'redeem', ?, ?)
-        `,
-        [
-          customerID,
-          bookingID,
-          Number(pointsToUse),
-          `Redeemed points for booking ${bookingID}`,
-        ]
-      );
-
-      await connection.query(
-        `
         UPDATE customers
         SET points = points - ?
         WHERE customerID = ?
