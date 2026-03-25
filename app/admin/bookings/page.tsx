@@ -22,6 +22,7 @@ interface Booking {
   paidAmount: number;
   refundedAmount: number;
   balanceAmount: number;
+  pointsUsed: number;
   createdAt: string;
 }
 
@@ -269,7 +270,8 @@ export default function AdminBookingsPage() {
                   <th className="text-left px-4 py-3">Booking</th>
                   <th className="text-left px-4 py-3">Payment</th>
                   <th className="text-left px-4 py-3">Total</th>
-                  <th className="text-left px-4 py-3">Paid</th>
+                   <th className="text-left px-4 py-3">Paid</th>
+                  <th className="text-left px-4 py-3 text-blue-600">Points</th>
                   <th className="text-left px-4 py-3">Balance</th>
                   <th className="text-left px-4 py-3 text-red-600">Refund Status</th>
                   <th className="text-left px-4 py-3">Action</th>
@@ -318,7 +320,8 @@ export default function AdminBookingsPage() {
                     </td>
 
                     <td className="px-4 py-3">${formatMoney(booking.totalAmount)}</td>
-                    <td className="px-4 py-3">${formatMoney(booking.paidAmount)}</td>
+                     <td className="px-4 py-3">${formatMoney(booking.paidAmount)}</td>
+                    <td className="px-4 py-3 font-semibold text-blue-600">{booking.pointsUsed}</td>
                     <td className="px-4 py-3">${formatMoney(booking.balanceAmount)}</td>
                     <td className="px-4 py-3">
                       {Number(booking.refundedAmount) > 0 ? (

@@ -71,6 +71,7 @@ export default function BookingPage() {
   const [services, setServices] = useState<PremiumService[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [latestPoints, setLatestPoints] = useState<number>(0);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -115,27 +116,38 @@ export default function BookingPage() {
     try {
       const roomsUrl = `/api/rooms${checkInDate && checkOutDate ? `?checkIn=${checkInDate}&checkOut=${checkOutDate}` : ""}`;
       
-      const [roomsRes, servicesRes] = await Promise.all([
+      const fetchPromises: Promise<Response>[] = [
         fetch(roomsUrl),
         fetch("/api/premium-services"),
-      ]);
+      ];
+
+      if (customer?.customerID) {
+        fetchPromises.push(fetch(`/api/customers/${customer.customerID}`));
+      }
+
+      const responses = await Promise.all(fetchPromises);
+      const roomsRes = responses[0];
+      const servicesRes = responses[1];
+      const customerRes = responses[2];
 
       const roomsText = await roomsRes.text();
       const servicesText = await servicesRes.text();
 
-      if (!roomsRes.ok) {
-        throw new Error(`Failed to fetch rooms: ${roomsText}`);
-      }
-
-      if (!servicesRes.ok) {
-        throw new Error(`Failed to fetch services: ${servicesText}`);
-      }
+      if (!roomsRes.ok) throw new Error(`Failed to fetch rooms: ${roomsText}`);
+      if (!servicesRes.ok) throw new Error(`Failed to fetch services: ${servicesText}`);
 
       const roomsData = roomsText ? JSON.parse(roomsText) : [];
       const servicesData = servicesText ? JSON.parse(servicesText) : [];
 
       setRooms(Array.isArray(roomsData) ? roomsData : []);
       setServices(Array.isArray(servicesData) ? servicesData : []);
+
+      if (customerRes && customerRes.ok) {
+        const customerData = await customerRes.json();
+        setLatestPoints(Number(customerData.customer?.points || 0));
+      } else {
+        setLatestPoints(Number(customer?.points || 0));
+      }
     } catch (error) {
       console.error(error);
       alert(error instanceof Error ? error.message : "Failed to load booking data");
@@ -180,9 +192,9 @@ export default function BookingPage() {
   }, [serviceSubtotal]);
 
   const maxPointsUsable = useMemo(() => {
-    const customerPoints = Number(customer?.points || 0);
+    const customerPoints = Number(latestPoints || 0);
     return Math.max(0, Math.min(customerPoints, maxPointsByAmount));
-  }, [customer?.points, maxPointsByAmount]);
+  }, [latestPoints, maxPointsByAmount]);
 
   const totalAmount = useMemo(() => {
     const safePoints = Math.min(Number(pointsToUse || 0), maxPointsUsable);

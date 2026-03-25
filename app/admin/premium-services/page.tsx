@@ -72,7 +72,7 @@ export default function PremiumServicesPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Premium Services</h1>
           <Link
-            href="/premium-services/add"
+            href="/admin/premium-services/add"
             className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
           >
             <Plus size={20} />
@@ -137,7 +137,7 @@ export default function PremiumServicesPage() {
 
                   <div className="flex gap-2 mt-4">
                     <Link
-                      href={`/premium-services/edit/${service.premiumServiceId}`}
+                      href={`/admin/premium-services/edit/${service.premiumServiceId}`}
                       className="flex-1 bg-blue-100 text-blue-700 px-3 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-200 transition-colors"
                     >
                       <Edit size={16} />

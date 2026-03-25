@@ -63,7 +63,7 @@ export default function EditServicePage() {
         throw new Error(error.error || "Failed to update service");
       }
 
-      router.push("/premium-services");
+      router.push("/admin/premium-services");
       router.refresh();
     } catch (error) {
       throw error;

@@ -34,7 +34,7 @@ export default function AddServicePage() {
         throw new Error(error.error || "Failed to create service");
       }
 
-      router.push("/premium-services");
+      router.push("/admin/premium-services");
       router.refresh();
     } catch (error) {
       throw error;

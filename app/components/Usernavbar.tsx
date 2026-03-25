@@ -42,7 +42,7 @@ export default function UserNavbar() {
           <Link href="/my-bookings" className={navClass("/my-bookings")}>
             History
           </Link>
-          <Link href="/premium-services" className={navClass("/premium-services")}>
+          <Link href="/user-services" className={navClass("/user-services")}>
             Services
           </Link>
           <Link href="/about-us" className={navClass("/about-us")}>

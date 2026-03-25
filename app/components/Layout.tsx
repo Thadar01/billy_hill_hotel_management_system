@@ -77,7 +77,7 @@ export default function Layout({ children }: LayoutProps) {
             <Link href="/admin/refunds" className={navClass("/admin/refunds")}>
               Refunds
             </Link>
-          <Link href="/premium-services" className={navClass("/premium-services")}>
+          <Link href="/admin/premium-services" className={navClass("/admin/premium-services")}>
          
             Premium Room Services
           </Link>

@@ -272,6 +272,12 @@ export default function MyBookingsPage() {
                     </p>
                   </div>
 
+                   <div>
+                    <p className="text-gray-500">Points Used</p>
+                    <p className="font-medium text-blue-600">
+                      {booking.pointsUsed}
+                    </p>
+                  </div>
                   <div>
                     <p className="text-gray-500">Total Amount</p>
                     <p className="font-medium">

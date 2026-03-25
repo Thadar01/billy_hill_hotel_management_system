@@ -23,6 +23,7 @@ interface Booking {
   paidAmount: number;
   refundedAmount: number;
   balanceAmount: number;
+  pointsUsed: number;
   createdAt: string;
 }
 
@@ -527,6 +528,10 @@ export default function AdminBookingDetailPage() {
                 <div className="flex justify-between">
                   <span>Refunded Amount</span>
                   <span>${formatMoney(booking.refundedAmount)}</span>
+                </div>
+                <div className="flex justify-between text-blue-600 font-medium">
+                  <span>Points Used</span>
+                  <span>{booking.pointsUsed}</span>
                 </div>
                 <div className="flex justify-between font-semibold">
                   <span>Balance Amount</span>
