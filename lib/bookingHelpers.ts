@@ -169,7 +169,7 @@ export async function recalculateBookingAmounts(
     SELECT COALESCE(SUM(refundAmount), 0) AS refundedAmount
     FROM refunds
     WHERE bookingID = ?
-      AND refundStatus = 'processed'
+      AND refundStatus = 'accepted'
     `,
     [bookingID]
   );
@@ -183,14 +183,13 @@ export async function recalculateBookingAmounts(
     | "unpaid"
     | "partially_paid"
     | "paid"
-    | "partially_refunded"
     | "refunded" = "unpaid";
 
   if (refundedAmount > 0) {
     if (netPaid <= 0) {
       paymentStatus = "refunded";
     } else {
-      paymentStatus = "partially_refunded";
+      paymentStatus = "refunded";
     }
   } else if (netPaid <= 0) {
     paymentStatus = "unpaid";

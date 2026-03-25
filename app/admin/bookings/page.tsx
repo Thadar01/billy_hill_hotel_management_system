@@ -270,8 +270,8 @@ export default function AdminBookingsPage() {
                   <th className="text-left px-4 py-3">Payment</th>
                   <th className="text-left px-4 py-3">Total</th>
                   <th className="text-left px-4 py-3">Paid</th>
-                  <th className="text-left px-4 py-3">Refunded</th>
                   <th className="text-left px-4 py-3">Balance</th>
+                  <th className="text-left px-4 py-3 text-red-600">Refund Status</th>
                   <th className="text-left px-4 py-3">Action</th>
                 </tr>
               </thead>
@@ -319,9 +319,16 @@ export default function AdminBookingsPage() {
 
                     <td className="px-4 py-3">${formatMoney(booking.totalAmount)}</td>
                     <td className="px-4 py-3">${formatMoney(booking.paidAmount)}</td>
-                    <td className="px-4 py-3">${formatMoney(booking.refundedAmount)}</td>
                     <td className="px-4 py-3">${formatMoney(booking.balanceAmount)}</td>
-
+                    <td className="px-4 py-3">
+                      {Number(booking.refundedAmount) > 0 ? (
+                        <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700 font-medium whitespace-nowrap">
+                          Refunded
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">No Refunds</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
                         {booking.bookingStatus === "confirmed" && (

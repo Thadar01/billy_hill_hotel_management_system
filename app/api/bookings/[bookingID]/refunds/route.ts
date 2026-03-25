@@ -25,7 +25,7 @@ export async function POST(
       paymentID: number;
       refundAmount: number;
       refundMethod: "cash" | "kbzpay" | "wavepay" | "bank_transfer" | "card";
-      refundStatus?: "pending" | "approved" | "rejected";
+      refundStatus?: "pending" | "accepted" | "rejected";
       refundReason?: string | null;
       refundRef?: string | null;
       note?: string | null;
@@ -43,7 +43,7 @@ export async function POST(
       );
     }
 
-    if (!["pending", "approved", "rejected"].includes(refundStatus)) {
+    if (!["pending", "accepted", "rejected"].includes(refundStatus)) {
       return NextResponse.json(
         { error: "Invalid refundStatus" },
         { status: 400 }
@@ -73,7 +73,7 @@ export async function POST(
 
     const [paymentRows] = await connection.query<RowDataPacket[]>(
       `
-      SELECT paymentID, bookingID, amount
+      SELECT paymentID, bookingID, amount, paymentMethod
       FROM payments
       WHERE paymentID = ?
         AND bookingID = ?
@@ -92,17 +92,18 @@ export async function POST(
       SELECT COALESCE(SUM(refundAmount), 0) AS totalRefunded
       FROM refunds
       WHERE paymentID = ?
-        AND refundStatus = 'approved'
+        AND refundStatus = 'accepted'
       `,
       [paymentID]
     );
 
     const alreadyRefunded = Number(refundSumRows[0].totalRefunded || 0);
-    const remainingRefundable = Number(payment.amount) - alreadyRefunded;
+    // User requested that refunds can be more than payment, so we remove the limits.
+    const remainingRefundable = Infinity; // For logic consistency, or just remove the check below.
 
     if (Number(refundAmount) > remainingRefundable) {
       throw new Error(
-        `Refund exceeds remaining refundable amount. Remaining: ${remainingRefundable}`
+        `Refund exceeds remaining refundable limit. Allowed: ${remainingRefundable}`
       );
     }
 
@@ -130,7 +131,7 @@ export async function POST(
         refundReason || null,
         refundRef || null,
         note || null,
-        refundStatus === "approved" ? new Date() : null,
+        refundStatus === "accepted" ? new Date() : null,
       ]
     );
 

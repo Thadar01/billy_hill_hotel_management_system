@@ -125,7 +125,7 @@ export default function MyBookingsPage() {
       }
 
       const confirmed = window.confirm(
-        "Are you sure you want to cancel this booking?"
+        "Are you sure you want to cancel this booking?\n\nNOTE: Our cancellation policy only allows a 50% refund of your paid amount."
       );
 
       if (!confirmed) return;

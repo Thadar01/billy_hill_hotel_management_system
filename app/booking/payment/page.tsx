@@ -26,7 +26,6 @@ export default function PaymentPage() {
 
   // Pay Info
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [transactionId, setTransactionId] = useState("");
   
   const [isMobileConnected, setIsMobileConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -67,10 +66,6 @@ export default function PaymentPage() {
       } else if (paymentMethod === "kbzpay" || paymentMethod === "wavepay") {
         if (!isMobileConnected) {
           alert(`Please connect your ${paymentMethod === 'kbzpay' ? 'KBZPay' : 'WavePay'} account first.`);
-          return;
-        }
-        if (!transactionId) {
-          alert("Please enter the transaction ID.");
           return;
         }
       }
@@ -331,27 +326,14 @@ export default function PaymentPage() {
                                         disabled={isConnecting || isMobileConnected || !phoneNumber}
                                         className={`px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm ${
                                             isMobileConnected 
-                                              ? 'bg-green-500 text-white border border-green-600' 
-                                              : 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 border border-blue-700'
+                                              ? 'bg-green-500 text-white border-green-600 disabled:bg-green-500 disabled:text-white disabled:border-green-600 disabled:opacity-100' 
+                                              : 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 border-blue-700'
                                         }`}
                                     >
                                         {isConnecting ? '...' : isMobileConnected ? 'Connected ✓' : `Connect`}
                                     </button>
                                 </div>
                             </div>
-                            
-                            {isMobileConnected && (
-                            <div className="animate-in zoom-in slide-in-from-top-2 duration-300">
-                                <label className="text-xs font-bold text-gray-500 mb-1.5 block">Transaction ID (Reference)</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Enter the 16-digit transaction ID" 
-                                    value={transactionId}
-                                    onChange={(e) => setTransactionId(e.target.value)}
-                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all" 
-                                />
-                            </div>
-                            )}
                         </div>
                     </div>
                     )}
