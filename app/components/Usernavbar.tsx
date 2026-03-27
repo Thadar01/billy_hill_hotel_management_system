@@ -51,6 +51,9 @@ export default function UserNavbar() {
           <Link href="/privacy-policy" className={navClass("/privacy-policy")}>
             Privacy Policy
           </Link>
+          <Link href="/feedback" className={navClass("/feedback")}>
+            Reviews
+          </Link>
           <Link href="/q-and-a" className={navClass("/q-and-a")}>
             Q&amp;A
           </Link>

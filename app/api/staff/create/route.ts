@@ -11,10 +11,8 @@ export async function POST(req: NextRequest) {
       staff_name,
       staff_phone,
       staff_gmail,
-      staff_passwords,
       salary_rate,
       overtime_fees,
-      staff_profile,
       date_of_birth,
       role_id,
     } = await req.json();
@@ -22,7 +20,6 @@ export async function POST(req: NextRequest) {
     if (
       !staff_name ||
       !staff_gmail ||
-      !staff_passwords ||
       !salary_rate ||
       !overtime_fees ||
       !role_id
@@ -33,13 +30,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(staff_passwords, 10);
-    const staffId = uuidv4(); 
+    // Auto-generate a random 10-character password
+    const generatedPassword = 'Staff123!@#';
+    const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+    const staffId = uuidv4();
 
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO staffs 
-      (staff_id, staff_name, staff_phone, staff_gmail, staff_passwords, salary_rate, overtime_fees, staff_profile, date_of_birth, role_id) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (staff_id, staff_name, staff_phone, staff_gmail, staff_passwords, salary_rate, overtime_fees, date_of_birth, role_id) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         staffId,
         staff_name,
@@ -48,7 +47,6 @@ export async function POST(req: NextRequest) {
         hashedPassword,
         salary_rate,
         overtime_fees,
-        staff_profile || null,
         date_of_birth || null,
         role_id,
       ]
@@ -57,6 +55,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message: "Staff created successfully",
       staffId: result.insertId,
+      generatedPassword: generatedPassword, // Return the plain-text password to the admin
     });
   } catch (err: unknown) {
     console.error(err);

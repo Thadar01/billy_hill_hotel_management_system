@@ -272,7 +272,7 @@ export default function MyBookingsPage() {
                     </p>
                   </div>
 
-                   <div>
+                  <div>
                     <p className="text-gray-500">Points Used</p>
                     <p className="font-medium text-blue-600">
                       {booking.pointsUsed}
@@ -306,6 +306,15 @@ export default function MyBookingsPage() {
                     </button>
                   )}
 
+                  {(booking.bookingStatus === "checked_out" || booking.bookingStatus === "confirmed") && (
+                    <Link
+                      href={`/feedback/${booking.bookingID}`}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                    >
+                      Leave Feedback
+                    </Link>
+                  )}
+
                   <Link
                     href={`/my-bookings/${booking.bookingID}`}
                     className="bg-black text-white px-4 py-2 rounded-lg"
@@ -317,6 +326,7 @@ export default function MyBookingsPage() {
             ))}
           </div>
         )}
+
       </div>
     </UserLayout>
   );

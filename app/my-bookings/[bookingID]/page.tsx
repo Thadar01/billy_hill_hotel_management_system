@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import UserLayout from "../../components/UserLayout";
 import { useCustomerAuthStore } from "@/store/useCustomerAuthStore";
+import { MessageSquare } from "lucide-react";
 
 interface Booking {
   bookingID: string;
@@ -109,6 +110,14 @@ interface BookingDetailResponse {
   pointTransactions: PointTransaction[];
 }
 
+interface Feedback {
+  feedbackId: number;
+  rating: number;
+  category: string;
+  comment: string | null;
+  createdAt: string;
+}
+
 function formatMoney(value: number | string) {
   return Number(value || 0).toFixed(2);
 }
@@ -131,6 +140,7 @@ export default function BookingDetailPage() {
   const [error, setError] = useState("");
   const [cancelling, setCancelling] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -146,7 +156,19 @@ export default function BookingDetailPage() {
     }
 
     fetchBookingDetail();
+    fetchFeedbacks();
   }, [bookingID, customer?.customerID]);
+
+  const fetchFeedbacks = async () => {
+    if (!bookingID) return;
+    try {
+      const res = await fetch(`/api/feedbacks?bookingID=${encodeURIComponent(bookingID)}`);
+      const data = await res.json();
+      setFeedbacks(Array.isArray(data.feedbacks) ? data.feedbacks : []);
+    } catch {
+      // silently fail — feedback is non-critical
+    }
+  };
 
   const fetchBookingDetail = async () => {
     try {
@@ -515,6 +537,57 @@ export default function BookingDetailPage() {
                 </div>
               )}
             </div>
+
+            {/* Feedback Section */}
+            {(booking.bookingStatus === "checked_out" || booking.bookingStatus === "confirmed") && (
+              <div className="bg-white shadow rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <MessageSquare className="text-blue-600" size={20} />
+                    <h2 className="text-xl font-semibold">Feedback</h2>
+                  </div>
+                  <Link
+                    href={`/feedback/${booking.bookingID}`}
+                    className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {feedbacks.length > 0 ? "Update Feedback" : "Leave Feedback"}
+                  </Link>
+                </div>
+
+                {feedbacks.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No feedback submitted yet for this booking.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {feedbacks.map((fb) => (
+                      <div key={fb.feedbackId} className="border rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-semibold text-sm text-gray-800">{fb.category}</span>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg
+                                key={star}
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                className="w-4 h-4"
+                                fill={star <= fb.rating ? "#fbbf24" : "transparent"}
+                                stroke={star <= fb.rating ? "#fbbf24" : "#d1d5db"}
+                                strokeWidth={1.5}
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                              </svg>
+                            ))}
+                            <span className="ml-1 text-xs text-gray-500">{fb.rating}/5</span>
+                          </div>
+                        </div>
+                        {fb.comment && (
+                          <p className="text-sm text-gray-600 mt-1">{fb.comment}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
