@@ -1,6 +1,7 @@
 "use client";
 import { JSX, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 import Layout from "../components/Layout";
 
 import {
@@ -14,7 +15,7 @@ import {
   Schedule,
   Shift,
   WeekSchedule,
- 
+
 } from "./type";
 
 
@@ -28,11 +29,17 @@ interface ErrorResponse {
 }
 
 export default function SchedulesPage() {
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const today = new Date();
-const formattedToday = today.toISOString().split("T")[0];
+  interface Role {
+    role_id: number;
+    role: string;
+  }
 
-const [weekStart, setWeekStart] = useState(formattedToday);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const today = new Date();
+  const formattedToday = today.toISOString().split("T")[0];
+
+  const [weekStart, setWeekStart] = useState(formattedToday);
 
   const [loading, setLoading] = useState(true);
   const [filterShift, setFilterShift] = useState<string>("all");
@@ -48,6 +55,26 @@ const [weekStart, setWeekStart] = useState(formattedToday);
   } | null>(null);
   const [updating, setUpdating] = useState(false);
   const router = useRouter();
+  const { user } = useAuthStore();
+
+  const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
+  const normalizedRole = roleName.toLowerCase();
+  const isManager = ["staff manager"].includes(normalizedRole);
+  const isStaff = ["housekeeping", "receptionist"].includes(normalizedRole);
+
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        setRoles(data.roles || []);
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -213,42 +240,42 @@ const [weekStart, setWeekStart] = useState(formattedToday);
   };
 
   const handleViewDetail = (scheduleId: number) => {
-  router.push(`/schedules/${scheduleId}/view`);
-};
+    router.push(`/schedules/${scheduleId}/view`);
+  };
 
   const handleAttendanceAction = async (
-  scheduleId: number,
-  action: "checkin" | "checkout"
-) => {
-  try {
-    const now = new Date().toISOString(); // current time
+    scheduleId: number,
+    action: "checkin" | "checkout"
+  ) => {
+    try {
+      const now = new Date().toISOString(); // current time
 
-    const response = await fetch(`/api/schedules/${scheduleId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action,
-        time: now,
-      }),
-    });
+      const response = await fetch(`/api/schedules/${scheduleId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action,
+          time: now,
+        }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      alert(error.error || "Failed to update attendance");
-      return;
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || "Failed to update attendance");
+        return;
+      }
+
+      // Refresh schedules after update
+      const res = await fetch(`/api/schedules?week=${weekStart}`);
+      const data: ApiResponse = await res.json();
+      setSchedules(data.schedules || []);
+    } catch (error) {
+      console.error("Attendance error:", error);
+      alert("Something went wrong");
     }
-
-    // Refresh schedules after update
-    const res = await fetch(`/api/schedules?week=${weekStart}`);
-    const data: ApiResponse = await res.json();
-    setSchedules(data.schedules || []);
-  } catch (error) {
-    console.error("Attendance error:", error);
-    alert("Something went wrong");
-  }
-};
+  };
 
 
   // Handle edit whole schedule
@@ -280,12 +307,14 @@ const [weekStart, setWeekStart] = useState(formattedToday);
             onChange={(e) => { setWeekStart(e.target.value); setLoading(true); }}
             className="border px-3 py-2 rounded text-black"
           />
-          <button
-            onClick={() => router.push("/schedules/create")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-          >
-            + Create Schedule
-          </button>
+          {isManager && (
+            <button
+              onClick={() => router.push("/schedules/create")}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium"
+            >
+              + Create Schedule
+            </button>
+          )}
         </div>
       </div>
 
@@ -307,7 +336,7 @@ const [weekStart, setWeekStart] = useState(formattedToday);
           ))}
         </div>
 
-   
+
       </div>
 
       {/* Table */}
@@ -332,8 +361,8 @@ const [weekStart, setWeekStart] = useState(formattedToday);
                 const hasMatchingShift = Object.values(staff.shifts).some(
                   (shift) => shift && (filterShift === "all" || (shift.shift_type || '') === filterShift)
                 );
-             
-                if ((filterShift !== "all" && !hasMatchingShift) ) return null;
+
+                if ((filterShift !== "all" && !hasMatchingShift)) return null;
 
                 return (
                   <tr
@@ -414,7 +443,7 @@ const [weekStart, setWeekStart] = useState(formattedToday);
         <div className="flex gap-4 flex-wrap">
           <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Scheduled</span>
           <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Cancelled</span>
-          
+
         </div>
       </div>
 
@@ -459,13 +488,13 @@ const [weekStart, setWeekStart] = useState(formattedToday);
                                         onClick={() => handleStatusUpdate(shift.id!, status)}
                                         disabled={updating}
                                         className={`px-3 py-1 rounded text-sm capitalize ${shift.status === status
-                                            ? status === 'scheduled' ? 'bg-blue-600 text-white'
-                                              : status === 'cancelled' ? 'bg-gray-600 text-white'
-                                                : status === 'present' ? 'bg-green-600 text-white'
-                                                  : status === 'late' ? 'bg-yellow-600 text-white'
-                                                    : status === 'absent' ? 'bg-red-600 text-white'
-                                                      : 'bg-gray-600 text-white'
-                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                          ? status === 'scheduled' ? 'bg-blue-600 text-white'
+                                            : status === 'cancelled' ? 'bg-gray-600 text-white'
+                                              : status === 'present' ? 'bg-green-600 text-white'
+                                                : status === 'late' ? 'bg-yellow-600 text-white'
+                                                  : status === 'absent' ? 'bg-red-600 text-white'
+                                                    : 'bg-gray-600 text-white'
+                                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                           }`}
                                       >
                                         {status}
@@ -473,26 +502,28 @@ const [weekStart, setWeekStart] = useState(formattedToday);
                                     ))}
                                   </div>
                                 </div>
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => handleEditSchedule(shift.id!)}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                                  >
-                                    Edit Full Schedule
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteSchedule(shift.id!)}
-                                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                                  >
-                                    Delete
-                                  </button>
-                                  <button
-                                    onClick={() => setEditingSchedule(null)}
-                                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
+                                {isManager && (
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleEditSchedule(shift.id!)}
+                                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+                                    >
+                                      Edit Full Schedule
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteSchedule(shift.id!)}
+                                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium"
+                                    >
+                                      Delete
+                                    </button>
+                                    <button
+                                      onClick={() => setEditingSchedule(null)}
+                                      className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-medium"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             ) : (
                               // View mode
@@ -503,8 +534,8 @@ const [weekStart, setWeekStart] = useState(formattedToday);
                                 <p className="text-black">
                                   <span className="font-medium">Shift Type:</span>{' '}
                                   <span className={`capitalize px-2 py-1 rounded text-sm ${shift.shift_type === 'morning' ? 'bg-blue-100 text-blue-800' :
-                                      shift.shift_type === 'evening' ? 'bg-orange-100 text-orange-800' :
-                                        shift.shift_type === 'night' ? 'bg-purple-100 text-purple-800' : ''
+                                    shift.shift_type === 'evening' ? 'bg-orange-100 text-orange-800' :
+                                      shift.shift_type === 'night' ? 'bg-purple-100 text-purple-800' : ''
                                     }`}>
                                     {shift.shift_type || 'Not specified'}
                                   </span>
@@ -530,47 +561,49 @@ const [weekStart, setWeekStart] = useState(formattedToday);
 
 
                                 <div className="flex gap-2 mt-2">
-  {!shift.actual_check_in && (
-    <button
-      onClick={() => handleAttendanceAction(shift.id!, "checkin")}
-      className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-    >
-      Check In
-    </button>
-  )}
+                                  {isStaff && !shift.actual_check_in && (
+                                    <button
+                                      onClick={() => handleAttendanceAction(shift.id!, "checkin")}
+                                      className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 font-medium"
+                                    >
+                                      Check In
+                                    </button>
+                                  )}
 
-  {shift.actual_check_in && !shift.actual_check_out && (
-    <button
-      onClick={() => handleAttendanceAction(shift.id!, "checkout")}
-      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-    >
-      Check Out
-    </button>
-  )}
-</div>
+                                  {isStaff && shift.actual_check_in && !shift.actual_check_out && (
+                                    <button
+                                      onClick={() => handleAttendanceAction(shift.id!, "checkout")}
+                                      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 font-medium"
+                                    >
+                                      Check Out
+                                    </button>
+                                  )}
+                                </div>
 
                                 <p className="text-black">
                                   <span className="font-medium">Break:</span> {shift.break_minutes} minutes
                                 </p>
                                 <button
-  onClick={() => handleViewDetail(shift.id!)}
-  className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
->
-  View Details
-</button>
-                                <button
-                                  onClick={() => setEditingSchedule({
-                                    date,
-                                    schedule_id: shift.id!,
-                                    start_time: shift.start_time,
-                                    end_time: shift.end_time,
-                                    break_minutes: shift.break_minutes,
-                                    status: shift.status || ''
-                                  })}
-                                  className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+                                  onClick={() => handleViewDetail(shift.id!)}
+                                  className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
                                 >
-                                  Manage Schedule/Leave →
+                                  View Details
                                 </button>
+                                {isManager && (
+                                  <button
+                                    onClick={() => setEditingSchedule({
+                                      date,
+                                      schedule_id: shift.id!,
+                                      start_time: shift.start_time,
+                                      end_time: shift.end_time,
+                                      break_minutes: shift.break_minutes,
+                                      status: shift.status || ''
+                                    })}
+                                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium border-b border-transparent hover:border-blue-600 inline-block transition-all"
+                                  >
+                                    Manage Schedule/Leave →
+                                  </button>
+                                )}
                               </div>
                             )
                           ) : (

@@ -98,7 +98,7 @@ export default function Layout({ children }: LayoutProps) {
         <nav className="flex-1 flex flex-col p-4 gap-2 overflow-y-auto">
           {renderLink("/", "Main Dashboard")}
           {renderLink("/staff", "Staffs")}
-          {renderLink("/roles", "Roles")}
+          {/* {renderLink("/roles", "Roles")} */}
           {renderLink("/schedules", "Schedules")}
           {renderLink("/payroll", "Payroll")}
           {renderLink("/rooms", "Rooms")}
