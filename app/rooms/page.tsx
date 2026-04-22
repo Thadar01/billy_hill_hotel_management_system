@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import RoomCard from "./components/RoomCard";
 import Layout from "../components/Layout";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface ActiveDiscount {
   discountID: number;
@@ -38,12 +39,38 @@ interface Room {
 }
 
 export default function RoomsPage() {
+  interface Role {
+    role_id: number;
+    role: string;
+  }
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [roles, setRoles] = useState<Role[]>([]);
+
+  const { user } = useAuthStore();
+
+  const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
+  const normalizedRole = roleName.toLowerCase();
+  console.log('normalize Role:', normalizedRole)
+  const isManager = ["general manager"].includes(normalizedRole);
+
 
   useEffect(() => {
     fetchRooms();
+  }, []);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        setRoles(data.roles || []);
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
   }, []);
 
   const fetchRooms = async () => {
@@ -74,9 +101,9 @@ export default function RoomsPage() {
   };
 
   const handleStatusChange = (roomID: string, newStatus: string) => {
-    setRooms(prevRooms => 
-      prevRooms.map(room => 
-        room.roomID === roomID 
+    setRooms(prevRooms =>
+      prevRooms.map(room =>
+        room.roomID === roomID
           ? { ...room, roomStatus: newStatus }
           : room
       )
@@ -91,20 +118,22 @@ export default function RoomsPage() {
       <div className="container mx-auto px-4 py-8 text-black">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Rooms Management</h1>
-          <Link
+          {isManager && <Link
             href="/rooms/add"
             className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
           >
             <Plus size={20} />
             Add New Room
-          </Link>
+          </Link>}
+
+
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rooms.map((room) => (
-            <RoomCard 
-              key={room.roomID} 
-              room={room} 
+            <RoomCard
+              key={room.roomID}
+              room={room}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
             />

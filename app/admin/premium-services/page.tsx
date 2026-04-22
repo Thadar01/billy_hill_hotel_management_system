@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Search, Edit, Trash2, DollarSign } from "lucide-react";
 import Layout from "@/app/components/Layout";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface PremiumService {
   premiumServiceId: number;
@@ -13,21 +14,42 @@ interface PremiumService {
 }
 
 export default function PremiumServicesPage() {
+  interface Role {
+    role_id: number;
+    role: string;
+  }
   const [services, setServices] = useState<PremiumService[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+
   const [filteredServices, setFilteredServices] = useState<PremiumService[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const { user } = useAuthStore();
 
+  const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
+  const normalizedRole = roleName.toLowerCase();
+  const isManager = ["general manager"].includes(normalizedRole);
   useEffect(() => {
     fetchServices();
   }, []);
-
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        setRoles(data.roles || []);
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
+  }, []);
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setFilteredServices(services);
     } else {
-      const filtered = services.filter(service => 
+      const filtered = services.filter(service =>
         service.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         service.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -71,13 +93,14 @@ export default function PremiumServicesPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Premium Services</h1>
-          <Link
+          {isManager && <Link
             href="/admin/premium-services/add"
             className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
           >
             <Plus size={20} />
             Add New Service
-          </Link>
+          </Link>}
+
         </div>
 
         {/* Search Bar */}
@@ -130,12 +153,11 @@ export default function PremiumServicesPage() {
                       {service.price}
                     </span>
                   </div>
-                  
+
                   <p className="text-gray-600 mb-4 line-clamp-3">
                     {service.description || "No description available"}
                   </p>
-
-                  <div className="flex gap-2 mt-4">
+                  {isManager && <div className="flex gap-2 mt-4">
                     <Link
                       href={`/admin/premium-services/edit/${service.premiumServiceId}`}
                       className="flex-1 bg-blue-100 text-blue-700 px-3 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-200 transition-colors"
@@ -150,7 +172,9 @@ export default function PremiumServicesPage() {
                       <Trash2 size={16} />
                       Delete
                     </button>
-                  </div>
+                  </div>}
+
+
                 </div>
               </div>
             ))}

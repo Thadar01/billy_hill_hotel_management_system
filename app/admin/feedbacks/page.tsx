@@ -16,21 +16,29 @@ interface FeedbackItem {
   roomNumber: string | null;
   roomType: string | null;
 }
-
 function StarDisplay({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((star) => (
-        <Star
+        <svg
           key={star}
-          size={14}
-          className={star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
-        />
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          className="w-4 h-4"
+          fill={star <= rating ? "#fbbf24" : "transparent"}
+          stroke={star <= rating ? "#fbbf24" : "#d1d5db"}
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
+          />
+        </svg>
       ))}
     </div>
   );
 }
-
 export default function AdminFeedbackPage() {
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,8 +118,8 @@ export default function AdminFeedbackPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                       <StarDisplay rating={Math.round(Number(avg))} />
-                       <span className="text-sm font-bold text-black">{avg} / 5.0</span>
+                      <StarDisplay rating={Math.round(Number(avg))} />
+                      <span className="text-sm font-bold text-black">{avg} / 5.0</span>
                     </div>
                   </button>
 
@@ -121,20 +129,20 @@ export default function AdminFeedbackPage() {
                         <div key={fb.feedbackId} className="p-4 hover:bg-gray-50 transition-colors">
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex flex-col gap-1">
-                               <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-black">{fb.customerName || "Anonymous Guest"}</span>
-                                  <span className="text-xs text-gray-400">• Booking {fb.bookingID}</span>
-                                  {fb.roomNumber && <span className="text-xs text-gray-400">• Room {fb.roomNumber}</span>}
-                               </div>
-                               <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit">
-                                 {fb.category}
-                               </span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-black">{fb.customerName || "Anonymous Guest"}</span>
+                                <span className="text-xs text-gray-400">• Booking {fb.bookingID}</span>
+                                {fb.roomNumber && <span className="text-xs text-gray-400">• Room {fb.roomNumber}</span>}
+                              </div>
+                              <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit">
+                                {fb.category}
+                              </span>
                             </div>
                             <div className="flex flex-col items-end gap-1">
-                               <StarDisplay rating={fb.rating} />
-                               <span className="text-xs text-gray-500">
-                                 {new Date(fb.createdAt).toLocaleDateString()}
-                               </span>
+                              <StarDisplay rating={fb.rating} />
+                              <span className="text-xs text-gray-500">
+                                {new Date(fb.createdAt).toLocaleDateString()}
+                              </span>
                             </div>
                           </div>
                           <p className="text-gray-700 text-sm mt-2 leading-relaxed italic">

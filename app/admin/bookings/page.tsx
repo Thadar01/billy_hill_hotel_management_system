@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Layout from "@/app/components/Layout";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface Booking {
   bookingID: string;
@@ -58,6 +59,11 @@ function badgeClass(status: string) {
 }
 
 export default function AdminBookingsPage() {
+  interface Role {
+    role_id: number;
+    role: string;
+  }
+
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filtered, setFiltered] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,10 +74,28 @@ export default function AdminBookingsPage() {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("all");
   const [processingID, setProcessingID] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const { user } = useAuthStore();
+
+  const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
+  const normalizedRole = roleName.toLowerCase();
+  const isManager = ["receptionist"].includes(normalizedRole);
 
   useEffect(() => {
     setMounted(true);
     fetchBookings();
+  }, []);
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        setRoles(data.roles || []);
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
   }, []);
 
   useEffect(() => {
@@ -270,7 +294,7 @@ export default function AdminBookingsPage() {
                   <th className="text-left px-4 py-3">Booking</th>
                   <th className="text-left px-4 py-3">Payment</th>
                   <th className="text-left px-4 py-3">Total</th>
-                   <th className="text-left px-4 py-3">Paid</th>
+                  <th className="text-left px-4 py-3">Paid</th>
                   <th className="text-left px-4 py-3 text-blue-600">Points</th>
                   <th className="text-left px-4 py-3">Balance</th>
                   <th className="text-left px-4 py-3 text-red-600">Refund Status</th>
@@ -320,7 +344,7 @@ export default function AdminBookingsPage() {
                     </td>
 
                     <td className="px-4 py-3">${formatMoney(booking.totalAmount)}</td>
-                     <td className="px-4 py-3">${formatMoney(booking.paidAmount)}</td>
+                    <td className="px-4 py-3">${formatMoney(booking.paidAmount)}</td>
                     <td className="px-4 py-3 font-semibold text-blue-600">{booking.pointsUsed}</td>
                     <td className="px-4 py-3">${formatMoney(booking.balanceAmount)}</td>
                     <td className="px-4 py-3">
@@ -344,7 +368,7 @@ export default function AdminBookingsPage() {
                           </button>
                         )}
 
-                        {booking.bookingStatus === "checked_in" && (
+                        {booking.bookingStatus === "checked_in" && isManager && (
                           <button
                             onClick={() => handleCheckOut(booking.bookingID)}
                             disabled={processingID === booking.bookingID}

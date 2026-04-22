@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface Staff {
   staff_id: string;
@@ -32,6 +33,11 @@ export default function StaffPage() {
   const [fetchingExtra, setFetchingExtra] = useState<string | null>(null);
 
   const router = useRouter();
+  const { user } = useAuthStore();
+
+  const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
+  const normalizedRole = roleName.toLowerCase();
+  const isManager = ["general manager"].includes(normalizedRole);
 
   // Fetch roles
   useEffect(() => {
@@ -120,12 +126,13 @@ export default function StaffPage() {
             <h1 className="text-3xl font-semibold text-black">Staff Directory</h1>
             <p className="text-gray-500 text-sm">Manage team members, roles, and performance metrics</p>
           </div>
-          <button
+          {isManager && <button
             onClick={() => router.push("/staff/register")}
             className="w-full py-3 rounded bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
           >
             Register Staff
-          </button>
+          </button>}
+
         </div>
 
         {/* Dynamic Search & Filters */}
@@ -292,7 +299,7 @@ export default function StaffPage() {
                       )}
                     </div>
 
-                    <div className="flex flex-row sm:flex-col gap-4 mt-8 pt-6 mb-2 ml-2 mr-2 border-t border-gray-100">
+                    {isManager && <div className="flex flex-row sm:flex-col gap-4 mt-8 pt-6 mb-2 ml-2 mr-2 border-t border-gray-100">
                       <button
                         onClick={() => handleEdit(staff)}
                         className="flex-1 py-3 rounded bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
@@ -311,7 +318,9 @@ export default function StaffPage() {
                       >
                         Delete Staff
                       </button>
-                    </div>
+                    </div>}
+
+
                   </div>
                 )}
               </div>

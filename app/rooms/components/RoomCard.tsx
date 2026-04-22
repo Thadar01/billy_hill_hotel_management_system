@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Pencil,
   Trash2,
@@ -19,6 +19,7 @@ import {
   Sparkles,
   ChevronDown,
 } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface ActiveDiscount {
   discountID: number;
@@ -46,7 +47,7 @@ interface Room {
   person: number;
   bathroom: number;
   isPetAllowed: boolean;
-  isBalcony:boolean;
+  isBalcony: boolean;
   images: string[];
   activeDiscount: ActiveDiscount | null;
 }
@@ -62,8 +63,20 @@ export default function RoomCard({
   onDelete,
   onStatusChange,
 }: RoomCardProps) {
+  interface Role {
+    role_id: number;
+    role: string;
+  }
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+
+  const { user } = useAuthStore();
+
+  const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
+  const normalizedRole = roleName.toLowerCase();
+  const isStaff = ["staff manager", "housekeeping", "receptionist"].includes(normalizedRole);
+
 
   const statusConfig = {
     available: {
@@ -143,6 +156,19 @@ export default function RoomCard({
       setIsUpdating(false);
     }
   };
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        setRoles(data.roles || []);
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
+  }, []);
+
 
   return (
     <div className="overflow-hidden rounded-lg bg-white shadow-lg transition-shadow hover:shadow-xl">
@@ -160,26 +186,41 @@ export default function RoomCard({
             No Image
           </div>
         )}
-     
+
 
         {/* Status Badge with Dropdown */}
+        {/* Status Badge / Dropdown */}
         <div className="absolute top-2 right-2 z-10">
           <div className="relative">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              disabled={isUpdating}
-              className={`${config.color} flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm transition-opacity hover:opacity-80`}
-            >
-              <Icon size={14} />
-              {config.label}
-              {isUpdating ? (
-                <Clock size={14} className="ml-1 animate-spin" />
-              ) : (
-                <ChevronDown size={14} className="ml-1" />
-              )}
-            </button>
 
-            {showDropdown && (
+            {/* 👇 ONLY MANAGER CAN SEE DROPDOWN */}
+            {isStaff ? (
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                disabled={isUpdating}
+                className={`${config.color} flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm transition-opacity hover:opacity-80`}
+              >
+                <Icon size={14} />
+                {config.label}
+
+                {isUpdating ? (
+                  <Clock size={14} className="ml-1 animate-spin" />
+                ) : (
+                  <ChevronDown size={14} className="ml-1" />
+                )}
+              </button>
+            ) : (
+              // 👇 NON-MANAGER: JUST STATUS (NO CLICK)
+              <div
+                className={`${config.color} flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm`}
+              >
+                <Icon size={14} />
+                {config.label}
+              </div>
+            )}
+
+            {/* 👇 DROPDOWN ONLY FOR MANAGER */}
+            {isStaff && showDropdown && (
               <>
                 <div
                   className="fixed inset-0 z-20"
@@ -190,11 +231,10 @@ export default function RoomCard({
                     <button
                       key={key}
                       onClick={() => handleStatusChange(key)}
-                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm ${
-                        key === room.roomStatus
-                          ? config.bgColor + " " + config.textColor
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm ${key === room.roomStatus
+                        ? config.bgColor + " " + config.textColor
+                        : "text-gray-700 hover:bg-gray-50"
+                        }`}
                     >
                       <config.icon size={16} className={config.textColor} />
                       <span className="flex-1">{config.label}</span>
@@ -206,6 +246,7 @@ export default function RoomCard({
                 </div>
               </>
             )}
+
           </div>
         </div>
       </div>
@@ -293,7 +334,7 @@ export default function RoomCard({
               <span>Pets Allowed</span>
             </div>
           )}
-             {room.isBalcony && (
+          {room.isBalcony && (
             <div className="flex items-center gap-1 text-gray-600">
               <PawPrint size={16} />
               <span>Is Balcony</span>

@@ -37,36 +37,108 @@ export default function ReceiptPage() {
     if (id) fetchPayroll();
   }, [id]);
 
+  // ✅ Date formatter
+  const formatDate = (date: string | null) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  };
+
   return (
     <Layout>
+      {/* PRINT STYLE */}
+      <style jsx>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #print-area, #print-area * {
+            visibility: visible;
+          }
+          #print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+        }
+      `}</style>
+
       {!payroll ? (
         <div className="p-6">Loading...</div>
       ) : (
         <div className="p-6 text-black">
-          <h1 className="text-2xl font-bold mb-4">Payroll Receipt</h1>
 
-          <div className="border p-4">
-            <p><strong>Staff:</strong> {payroll.staff_name}</p>
-            <p><strong>Period:</strong> {payroll.period_start} → {payroll.period_end}</p>
-            <p><strong>Worked Hours:</strong> {payroll.total_worked_hours}</p>
-            <p><strong>Base Pay:</strong> ${payroll.base_pay}</p>
-            <p><strong>Overtime:</strong> ${payroll.overtime_pay}</p>
-            <p><strong>Late Deduction:</strong> ${payroll.late_deduction}</p>
-            <p className="text-lg font-bold mt-2">
-              Gross Pay: ${payroll.gross_pay}
-            </p>
-            <p className="mt-2 text-green-600">
-              Status: {payroll.status}
-            </p>
-            <p>Paid At: {payroll.paid_at}</p>
+          {/* RECEIPT AREA */}
+          <div
+            id="print-area"
+            className="max-w-xl mx-auto bg-white border border-gray-300 p-6 rounded shadow-sm"
+          >
+            <h1 className="text-2xl font-bold mb-6 text-center">
+              Payroll Receipt
+            </h1>
+
+            <div className="space-y-2 text-sm">
+              <p><strong>Staff:</strong> {payroll.staff_name}</p>
+              <p><strong>Staff ID:</strong> {payroll.staff_id}</p>
+
+              <p>
+                <strong>Period:</strong>{" "}
+                {formatDate(payroll.period_start)} →{" "}
+                {formatDate(payroll.period_end)}
+              </p>
+
+              <hr className="my-3" />
+
+              <p><strong>Worked Hours:</strong> {payroll.total_worked_hours}</p>
+              <p><strong>Overtime (min):</strong> {payroll.total_overtime_minutes}</p>
+              <p><strong>Late (min):</strong> {payroll.total_late_minutes}</p>
+
+              <hr className="my-3" />
+
+              <p>
+                <strong>Base Pay:</strong>{" "}
+                ${payroll.base_pay.toLocaleString()}
+              </p>
+
+              <p>
+                <strong>Overtime Pay:</strong>{" "}
+                ${payroll.overtime_pay.toLocaleString()}
+              </p>
+
+              <p>
+                <strong>Late Deduction:</strong>{" "}
+                -${payroll.late_deduction.toLocaleString()}
+              </p>
+
+              <hr className="my-3" />
+
+              <p className="text-lg font-bold">
+                Gross Pay: $
+                {payroll.gross_pay.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </p>
+
+              <p className="mt-2">
+                <strong>Status:</strong>{" "}
+                <span className="text-green-600 capitalize">
+                  {payroll.status}
+                </span>
+              </p>
+
+              <p>
+                <strong>Paid At:</strong> {formatDate(payroll.paid_at)}
+              </p>
+            </div>
           </div>
 
-          <button
-            onClick={() => window.print()}
-            className="mt-4 bg-blue-600 text-white px-4 py-2"
-          >
-            Print Receipt
-          </button>
+          {/* PRINT BUTTON (hidden when printing) */}
+
+
         </div>
       )}
     </Layout>

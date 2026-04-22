@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Layout from "../components/Layout";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface Discount {
   discountID: number;
@@ -18,10 +19,21 @@ interface Discount {
 }
 
 export default function DiscountsPage() {
+  interface Role {
+    role_id: number;
+    role: string;
+  }
+
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const { user } = useAuthStore();
+
+  const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
+  const normalizedRole = roleName.toLowerCase();
+  const isManager = ["general manager"].includes(normalizedRole);
 
   const loadDiscounts = async () => {
     try {
@@ -34,6 +46,18 @@ export default function DiscountsPage() {
       setPageLoading(false);
     }
   };
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        setRoles(data.roles || []);
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -94,13 +118,13 @@ export default function DiscountsPage() {
               Manage discounts and assign one discount to multiple rooms.
             </p>
           </div>
-
-          <Link
+          {isManager && <Link
             href="/discounts/new"
             className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
             + Create Discount
-          </Link>
+          </Link>}
+
         </div>
 
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -126,7 +150,8 @@ export default function DiscountsPage() {
                   <th className="px-4 py-3 text-sm font-semibold">Date Range</th>
                   <th className="px-4 py-3 text-sm font-semibold">Rooms</th>
                   <th className="px-4 py-3 text-sm font-semibold">Status</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Action</th>
+                  {isManager && <th className="px-4 py-3 text-sm font-semibold">Action</th>
+                  }
                 </tr>
               </thead>
               <tbody>
@@ -180,17 +205,15 @@ export default function DiscountsPage() {
 
                       <td className="px-4 py-3">
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-medium ${
-                            discount.isActive
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${discount.isActive
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                            }`}
                         >
                           {discount.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
-
-                      <td className="px-4 py-3">
+                      {isManager && <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <Link
                             href={`/discounts/${discount.discountID}/edit`}
@@ -205,7 +228,9 @@ export default function DiscountsPage() {
                             Delete
                           </button>
                         </div>
-                      </td>
+                      </td>}
+
+
                     </tr>
                   ))
                 )}

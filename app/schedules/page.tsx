@@ -59,7 +59,7 @@ export default function SchedulesPage() {
 
   const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
   const normalizedRole = roleName.toLowerCase();
-  const isManager = ["staff manager", "administrator", "general manager", "admin"].includes(normalizedRole);
+  const isManager = ["staff manager"].includes(normalizedRole);
   const isStaff = ["housekeeping", "receptionist"].includes(normalizedRole);
 
 
@@ -556,7 +556,7 @@ export default function SchedulesPage() {
                                   >
                                     View
                                   </button>
-                                  {!shift.actual_check_in && (
+                                  {!shift.actual_check_in && isStaff && (
                                     <button
                                       onClick={() => handleAttendanceAction(shift.id!, "checkin")}
                                       className="px-4 py-2 bg-green-600 text-white rounded text-[10px] font-bold uppercase transition-all hover:bg-green-700"
@@ -564,7 +564,7 @@ export default function SchedulesPage() {
                                       Check In
                                     </button>
                                   )}
-                                  {shift.actual_check_in && !shift.actual_check_out && (
+                                  {shift.actual_check_in && !shift.actual_check_out && isStaff && (
                                     <button
                                       onClick={() => handleAttendanceAction(shift.id!, "checkout")}
                                       className="px-4 py-2 bg-blue-600 text-white rounded text-[10px] font-bold uppercase transition-all hover:bg-orange-700"
