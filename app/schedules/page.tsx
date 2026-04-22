@@ -43,7 +43,7 @@ export default function SchedulesPage() {
 
   const [loading, setLoading] = useState(true);
   const [filterShift, setFilterShift] = useState<string>("all");
-  const [selectedStaff, setSelectedStaff] = useState<WeekSchedule | null>(null);
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<{
     date: string;
@@ -59,7 +59,7 @@ export default function SchedulesPage() {
 
   const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
   const normalizedRole = roleName.toLowerCase();
-  const isManager = ["staff manager"].includes(normalizedRole);
+  const isManager = ["staff manager", "administrator", "general manager", "admin"].includes(normalizedRole);
   const isStaff = ["housekeeping", "receptionist"].includes(normalizedRole);
 
 
@@ -284,13 +284,13 @@ export default function SchedulesPage() {
   };
 
   const handleStaffClick = (staff: WeekSchedule) => {
-    setSelectedStaff(staff);
+    setSelectedStaffId(staff.staff_id);
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
-    setSelectedStaff(null);
+    setSelectedStaffId(null);
     setEditingSchedule(null);
   };
 
@@ -298,203 +298,204 @@ export default function SchedulesPage() {
 
   return (
     <Layout>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl text-black">Weekly Schedule</h1>
-        <div className="flex gap-2">
-          <input
-            type="date"
-            value={weekStart}
-            onChange={(e) => { setWeekStart(e.target.value); setLoading(true); }}
-            className="border px-3 py-2 rounded text-black"
-          />
-          {isManager && (
-            <button
-              onClick={() => router.push("/schedules/create")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium"
-            >
-              + Create Schedule
-            </button>
-          )}
+      <div className="flex flex-col gap-6 w-full text-black">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-semibold text-black">Weekly Schedule</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative group">
+              <input
+                type="date"
+                value={weekStart}
+                onChange={(e) => { setWeekStart(e.target.value); setLoading(true); }}
+                className="px-4 py-2 border border-gray-300 bg-white rounded text-sm text-black"
+              />
+            </div>
+            {isManager && (
+              <button
+                onClick={() => router.push("/schedules/create")}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium"
+              >
+                Add Schedule
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="mb-4 space-y-2">
-        <div className="flex gap-2 items-center">
-          <span className="font-medium text-black">Filter by shift:</span>
+        {/* Global Controls & Filters */}
+        <div className="flex flex-wrap gap-2 items-center bg-gray-50 p-4 rounded border border-gray-200">
+          <span className="text-sm font-semibold text-gray-700">Filter by Shift:</span>
           {shiftTypes.map((shift) => (
             <button
               key={shift}
               onClick={() => setFilterShift(shift)}
-              className={`px-3 py-1 rounded capitalize ${filterShift === shift
+              className={`px-4 py-1.5 rounded text-xs font-medium transition-all ${filterShift === shift
                 ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-black hover:bg-gray-300"
+                : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
                 }`}
             >
-              {shift}
+              {shift.charAt(0).toUpperCase() + shift.slice(1)}
             </button>
           ))}
         </div>
 
-
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300 bg-white">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2 text-left text-black">Staff Name</th>
-              {weekDates.map((date) => (
-                <th key={date} className="border p-2 text-center text-black min-w-[120px]">
-                  {formatDateDisplay(date)}
-                </th>
-              ))}
-              <th className="border p-2 text-center text-black">Break Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {weekSchedule.length === 0 ? (
-              <tr><td colSpan={9} className="border p-4 text-center text-gray-500">No schedules found</td></tr>
-            ) : (
-              weekSchedule.map((staff) => {
-                const hasMatchingShift = Object.values(staff.shifts).some(
-                  (shift) => shift && (filterShift === "all" || (shift.shift_type || '') === filterShift)
-                );
-
-                if ((filterShift !== "all" && !hasMatchingShift)) return null;
-
-                return (
-                  <tr
-                    key={staff.staff_id}
-                    className="hover:bg-gray-100 cursor-pointer transition-colors"
-                    onClick={() => handleStaffClick(staff)}
-                  >
-                    <td className="border p-2 font-medium text-black whitespace-nowrap">
-                      {staff.staff_name}
-                    </td>
-                    {weekDates.map((date) => {
-                      const shift = staff.shifts[date];
-                      let bgColor = "bg-white";
-                      if (shift?.shift_type) {
-                        bgColor = shift.shift_type === "morning" ? "bg-blue-200" :
-                          shift.shift_type === "evening" ? "bg-orange-200" :
-                            shift.shift_type === "night" ? "bg-purple-200" : "bg-white";
-                      }
-
-                      return (
-                        <td key={date} className={`border p-2 text-center ${bgColor} text-black`}>
-                          {shift ? (
-                            <div className="text-sm">
-                              <div className="font-sm text-[10px]">
-                                {formatShiftTime(shift.start_time, shift.end_time)}
-                              </div>
-                              {shift.shift_type && (
-                                <div className="text-xs text-gray-600 capitalize">{shift.shift_type}</div>
-                              )}
-                              <div className="mt-1">
-                                {getStatusBadge(shift.status)}
-                              </div>
-                              {getAttendanceIndicator(shift)}
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">—</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                    <td className="border p-2 text-center text-black">
-                      {Object.values(staff.shifts).some((s) => s && s.break_minutes) ? (
-                        <div className="text-xs">
-                          {Object.entries(staff.shifts).map(([date, shift]) => {
-                            if (!shift) return null;
-                            const dayBreak = shift.break_minutes;
-                            return dayBreak ? (
-                              <div key={date} className="mb-1">
-                                <span className="font-medium">
-                                  {(() => {
-                                    const [y, m, d] = date.split('-').map(Number);
-                                    const dateObj = new Date(Date.UTC(y, m - 1, d));
-                                    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                                    return days[dateObj.getUTCDay()];
-                                  })()}:
-                                </span> {dayBreak} min
-                              </div>
-                            ) : null;
-                          })}
-                        </div>
-                      ) : <span className="text-gray-400">—</span>}
+        {/* Schedule Matrix */}
+        <div className="bg-white border border-gray-300 rounded overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-100 border-b border-gray-300">
+                  <th className="px-4 py-3 text-sm font-semibold text-gray-700 sticky left-0 bg-gray-100 z-10">Staff</th>
+                  {weekDates.map((date) => (
+                    <th key={date} className="px-4 py-3 text-center min-w-[120px]">
+                      <div className="text-xs text-gray-500">{formatDateDisplay(date).split(",")[0]}</div>
+                      <div className="text-sm font-bold text-black">{formatDateDisplay(date).split(",")[1]}</div>
+                    </th>
+                  ))}
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700">Total Breaks</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {weekSchedule.length === 0 ? (
+                  <tr>
+                    <td colSpan={weekDates.length + 2} className="px-6 py-20 text-center">
+                      <p className="text-gray-300 font-black uppercase tracking-widest text-xs">No active rosters in this temporal window</p>
                     </td>
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                ) : (
+                  weekSchedule.map((staff) => {
+                    const hasMatchingShift = Object.values(staff.shifts).some(
+                      (shift) => shift && (filterShift === "all" || (shift.shift_type || '') === filterShift)
+                    );
 
-      {/* Legend */}
-      <div className="mt-4 space-y-2 text-sm text-black">
-        <div className="flex gap-4">
-          <div className="flex items-center gap-1"><div className="w-4 h-4 bg-blue-300 border"></div>Morning</div>
-          <div className="flex items-center gap-1"><div className="w-4 h-4 bg-orange-300 border"></div>Evening</div>
-          <div className="flex items-center gap-1"><div className="w-4 h-4 bg-purple-300 border"></div>Night</div>
-        </div>
-        <div className="flex gap-4 flex-wrap">
-          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Scheduled</span>
-          <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Cancelled</span>
+                    if ((filterShift !== "all" && !hasMatchingShift)) return null;
 
-        </div>
-      </div>
+                    return (
+                      <tr
+                        key={staff.staff_id}
+                        onClick={() => handleStaffClick(staff)}
+                        className="group hover:bg-gray-50/50 cursor-pointer transition-colors"
+                      >
+                        <td className="px-4 py-4 sticky left-0 bg-white group-hover:bg-gray-50 z-10 border-r border-gray-200">
+                          <div className="font-semibold text-black text-sm whitespace-nowrap">{staff.staff_name}</div>
+                        </td>
+                        {weekDates.map((date) => {
+                          const shift = staff.shifts[date];
+                          let colorClasses = "bg-white border-gray-300";
+                          if (shift?.shift_type) {
+                            colorClasses =
+                              shift.shift_type === "morning" ? "bg-blue-50 text-blue-700 border-gray-300" :
+                                shift.shift_type === "evening" ? "bg-yellow-50 text-yellow-700 border-gray-300" :
+                                  shift.shift_type === "night" ? "bg-purple-50 text-purple-700 border-gray-300" : "bg-white border-gray-300";
+                          }
 
-      {/* Staff Detail Modal */}
-      {showModal && selectedStaff && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-11/12 max-w-4xl max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-2xl font-bold text-black">{selectedStaff.staff_name} - Weekly Schedule</h2>
-              <button
-                onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                &times;
-              </button>
-            </div>
+                          return (
+                            <td key={date} className="p-2.5 align-top border-r border-transparent">
+                              {shift ? (
+                                <div className={`h-full min-h-[60px] rounded border p-2 text-xs transition-all ${colorClasses}`}>
+                                  <div className="font-bold uppercase text-[9px] text-gray-500 mb-0.5">{shift.shift_type}</div>
+                                  <div className="font-medium mb-1 mt-1">
+                                    {formatShiftTime(shift.start_time, shift.end_time)}
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <span className={`inline-block w-fit px-1 rounded text-[9px] font-bold uppercase ${shift.status === 'scheduled' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                                      }`}>
+                                      {shift.status}
+                                    </span>
+                                    {shift.actual_check_in && (
+                                      <span className="inline-block w-fit px-1 rounded text-[9px] font-bold uppercase bg-green-100 text-green-600">
+                                        {shift.actual_check_out ? 'Completed' : 'Checked In'}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="h-full min-h-[60px] rounded border border-transparent flex items-center justify-center opacity-20">
+                                  <span className="text-xs">—</span>
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
+                        <td className="px-4 py-4 text-center">
+                          <div className="text-xs text-gray-400">
+                            {Object.values(staff.shifts).some((s) => s && s.break_minutes) ? (
+                              <div className="flex flex-col gap-0.5">
+                                {Object.entries(staff.shifts).map(([date, shift]) => shift?.break_minutes ? (
+                                  <div key={date} className="flex justify-between gap-2 text-[9px] border-b border-gray-100 pb-0.5">
+                                    <span className="opacity-50">{new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                                    <span className="text-black font-bold">{shift.break_minutes}m</span>
+                                  </div>
+                                ) : null)}
+                              </div>
+                            ) : "—"}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>        {/* Staff Detail Modal - Simplified */}
+        {(() => {
+          const selectedStaff = weekSchedule.find(s => s.staff_id === selectedStaffId);
+          if (!showModal || !selectedStaff) return null;
 
-            <div className="p-4">
-              <div className="space-y-4">
-                {weekDates.map((date) => {
-                  const shift = selectedStaff.shifts[date];
-                  const isEditing = editingSchedule?.date === date;
+          return (
+            <div className="fixed inset-0 bg-white/20 backdrop-blur-md flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+                <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <h2 className="text-xl font-bold text-black">{selectedStaff.staff_name}</h2>
+                      <p className="text-gray-500 text-xs uppercase tracking-wider">Weekly Schedule</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={closeModal}
+                    className="p-1 hover:bg-gray-100 rounded transition-all"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                  </button>
+                </div>
 
-                  return (
-                    <div key={date} className="border rounded-lg p-4 bg-gray-50">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-black">
-                            {formatDateLong(date)}
-                          </h3>
+                <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {weekDates.map((date) => {
+                      const shift = selectedStaff.shifts[date];
+                      const isEditing = editingSchedule?.date === date;
+                      const bgClass = shift?.shift_type === 'morning' ? 'bg-blue-50 border-blue-100' :
+                        shift?.shift_type === 'evening' ? 'bg-yellow-50 border-yellow-100' :
+                          shift?.shift_type === 'night' ? 'bg-purple-50 border-purple-100' :
+                            'bg-white border-gray-200';
+
+                      return (
+                        <div key={date} className={`rounded-lg p-4 border transition-all ${bgClass}`}>
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-sm font-bold text-black">{formatDateLong(date)}</h3>
+                            </div>
+                            {shift && <span className="px-2 py-0.5 bg-white rounded-full text-[10px] font-bold uppercase border border-gray-100 shadow-sm">{shift.shift_type}</span>}
+                          </div>
 
                           {shift ? (
                             isEditing ? (
-                              // Edit mode for status
-                              <div className="mt-3 space-y-3">
+                              <div className="space-y-4">
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
-                                  <div className="flex flex-wrap gap-2">
+                                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block">Status Override</label>
+                                  <div className="flex gap-2">
                                     {['scheduled', 'cancelled'].map((status) => (
                                       <button
                                         key={status}
                                         onClick={() => handleStatusUpdate(shift.id!, status)}
                                         disabled={updating}
-                                        className={`px-3 py-1 rounded text-sm capitalize ${shift.status === status
-                                          ? status === 'scheduled' ? 'bg-blue-600 text-white'
-                                            : status === 'cancelled' ? 'bg-gray-600 text-white'
-                                              : status === 'present' ? 'bg-green-600 text-white'
-                                                : status === 'late' ? 'bg-yellow-600 text-white'
-                                                  : status === 'absent' ? 'bg-red-600 text-white'
-                                                    : 'bg-gray-600 text-white'
-                                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                        className={`flex-1 py-2 rounded text-xs font-bold uppercase border transition-all ${shift.status === status
+                                          ? 'bg-black text-white border-black'
+                                          : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
                                           }`}
                                       >
                                         {status}
@@ -503,137 +504,116 @@ export default function SchedulesPage() {
                                   </div>
                                 </div>
                                 {isManager && (
-                                  <div className="flex gap-2">
+                                  <div className="flex gap-2 mt-2">
                                     <button
                                       onClick={() => handleEditSchedule(shift.id!)}
-                                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+                                      className="flex-1 py-2.5 bg-blue-600 text-white rounded font-bold text-xs uppercase"
                                     >
-                                      Edit Full Schedule
+                                      Edit Details
                                     </button>
                                     <button
                                       onClick={() => handleDeleteSchedule(shift.id!)}
-                                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium"
+                                      className="px-3 py-2.5 bg-red-600 text-white rounded hover:bg-red-700"
                                     >
-                                      Delete
-                                    </button>
-                                    <button
-                                      onClick={() => setEditingSchedule(null)}
-                                      className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-medium"
-                                    >
-                                      Cancel
+                                      ✕
                                     </button>
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              // View mode
-                              <div className="mt-2 space-y-1">
-                                <p className="text-black">
-                                  <span className="font-medium">Time:</span> {formatShiftTime(shift.start_time, shift.end_time)}
-                                </p>
-                                <p className="text-black">
-                                  <span className="font-medium">Shift Type:</span>{' '}
-                                  <span className={`capitalize px-2 py-1 rounded text-sm ${shift.shift_type === 'morning' ? 'bg-blue-100 text-blue-800' :
-                                    shift.shift_type === 'evening' ? 'bg-orange-100 text-orange-800' :
-                                      shift.shift_type === 'night' ? 'bg-purple-100 text-purple-800' : ''
-                                    }`}>
-                                    {shift.shift_type || 'Not specified'}
-                                  </span>
-                                </p>
-                                <p className="text-black">
-                                  <span className="font-medium">Status:</span>{' '}
-                                  {getStatusBadge(shift.status)}
-                                </p>
-                                {/* <p className="text-black">
-                                  <span className="font-medium">Attendance:</span>{' '}
-                                  {getAttendanceIndicator(shift)}
-                                  {shift.actual_check_in && (
-                                    <span className="text-xs text-gray-600 block">
-                                      In: {formatTimeString(shift.actual_check_in)}
-                                    </span>
-                                  )}
-                                  {shift.actual_check_out && (
-                                    <span className="text-xs text-gray-600 block">
-                                      Out: {formatTimeString(shift.actual_check_out)}
-                                    </span>
-                                  )}
-                                </p> */}
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="bg-white p-3 rounded border border-white/50 shadow-sm">
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase mb-0.5">Shift Time</p>
+                                    <p className="text-sm font-bold text-black">{formatShiftTime(shift.start_time, shift.end_time)}</p>
+                                  </div>
+                                  <div className="bg-white p-3 rounded border border-white/50 shadow-sm">
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase mb-0.5">Break</p>
+                                    <p className="text-sm font-bold text-black">{shift.break_minutes || 0} Minutes</p>
+                                  </div>
+                                </div>
 
+                                {/* Attendance Info */}
+                                {(shift.actual_check_in || shift.actual_check_out) && (
+                                  <div className="flex flex-col gap-1 mt-2">
+                                    {shift.actual_check_in && (
+                                      <p className="text-[9px] text-green-600 font-bold uppercase">
+                                        In: {new Date(shift.actual_check_in).toLocaleTimeString()}
+                                      </p>
+                                    )}
+                                    {shift.actual_check_out && (
+                                      <p className="text-[9px] text-blue-600 font-bold uppercase">
+                                        Out: {new Date(shift.actual_check_out).toLocaleTimeString()}
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
 
-                                <div className="flex gap-2 mt-2">
-                                  {isStaff && !shift.actual_check_in && (
+                                <div className="flex gap-2 flex-wrap">
+                                  <button
+                                    onClick={() => handleViewDetail(shift.id!)}
+                                    className="px-4 py-2 bg-black text-white rounded text-[10px] font-bold uppercase transition-all"
+                                  >
+                                    View
+                                  </button>
+                                  {!shift.actual_check_in && (
                                     <button
                                       onClick={() => handleAttendanceAction(shift.id!, "checkin")}
-                                      className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 font-medium"
+                                      className="px-4 py-2 bg-green-600 text-white rounded text-[10px] font-bold uppercase transition-all hover:bg-green-700"
                                     >
                                       Check In
                                     </button>
                                   )}
-
-                                  {isStaff && shift.actual_check_in && !shift.actual_check_out && (
+                                  {shift.actual_check_in && !shift.actual_check_out && (
                                     <button
                                       onClick={() => handleAttendanceAction(shift.id!, "checkout")}
-                                      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 font-medium"
+                                      className="px-4 py-2 bg-blue-600 text-white rounded text-[10px] font-bold uppercase transition-all hover:bg-orange-700"
                                     >
                                       Check Out
                                     </button>
                                   )}
+                                  {isManager && (
+                                    <button
+                                      onClick={() => setEditingSchedule({
+                                        date,
+                                        schedule_id: shift.id!,
+                                        start_time: shift.start_time,
+                                        end_time: shift.end_time,
+                                        break_minutes: shift.break_minutes,
+                                        status: shift.status || ''
+                                      })}
+                                      className="flex-1 py-2 bg-white border border-gray-300 text-gray-600 text-[10px] font-bold uppercase rounded hover:bg-gray-50 transition-all"
+                                    >
+                                      Quick Edit
+                                    </button>
+                                  )}
                                 </div>
-
-                                <p className="text-black">
-                                  <span className="font-medium">Break:</span> {shift.break_minutes} minutes
-                                </p>
-                                <button
-                                  onClick={() => handleViewDetail(shift.id!)}
-                                  className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
-                                >
-                                  View Details
-                                </button>
-                                {isManager && (
-                                  <button
-                                    onClick={() => setEditingSchedule({
-                                      date,
-                                      schedule_id: shift.id!,
-                                      start_time: shift.start_time,
-                                      end_time: shift.end_time,
-                                      break_minutes: shift.break_minutes,
-                                      status: shift.status || ''
-                                    })}
-                                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium border-b border-transparent hover:border-blue-600 inline-block transition-all"
-                                  >
-                                    Manage Schedule/Leave →
-                                  </button>
-                                )}
                               </div>
                             )
                           ) : (
-                            <p className="text-gray-500 mt-2">No shift scheduled</p>
+                            <div className="py-4 text-center opacity-30">
+                              <p className="text-xs font-medium italic">No shift assigned</p>
+                            </div>
                           )}
                         </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                        {shift && !isEditing && (
-                          <div className="text-sm text-gray-500">
-                            ID: {shift.id}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+                  <button
+                    onClick={closeModal}
+                    className="px-6 py-2 bg-gray-100 text-black rounded font-bold text-xs uppercase hover:bg-gray-200 transition-all"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
-
-            <div className="flex justify-end p-4 border-t">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          );
+        })()}
+      </div>
     </Layout>
   );
 }
