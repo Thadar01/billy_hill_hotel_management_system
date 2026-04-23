@@ -93,7 +93,7 @@ export default function UserServicesPage() {
                   <div className="px-8 py-8 border-t border-gray-50 bg-gray-50/50 flex flex-col items-center">
                     <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Investment</span>
                     <span className="text-3xl font-bold text-black font-serif">
-                      ${Number(service.price).toFixed(2)}
+                      MMK {Math.floor(Number(service.price))}
                     </span>
                   </div>
                 </div>

@@ -68,6 +68,18 @@ export default function AdminRefundsPage() {
     setMounted(true);
     fetchRefunds();
   }, []);
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        setRoles(data.roles || []);
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
+  }, []);
 
   useEffect(() => {
     if (statusFilter === "all") {

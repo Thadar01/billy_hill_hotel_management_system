@@ -282,7 +282,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const pointsDiscountAmount = Number(pointsToUse || 0);
+    // Each point is worth 1,000 MMK
+    const pointsDiscountAmount = Number(pointsToUse || 0) * 1000;
 
     // FIXED: do not subtract totalDiscountAmount again
     const totalAmount = Number(

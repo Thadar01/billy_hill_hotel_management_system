@@ -263,15 +263,15 @@ export default function RoomCard({
             {hasDiscount ? (
               <>
                 <p className="text-sm text-gray-400 line-through">
-                  MMK {room.price}/night
+                  MMK {Math.floor(Number(room.price))}/night
                 </p>
                 <p className="text-xl font-bold text-red-600">
-                  MMK {room.finalPrice}/night
+                  MMK {Math.floor(Number(room.finalPrice))}/night
                 </p>
               </>
             ) : (
               <p className="text-xl font-bold text-blue-600">
-                MMK {room.price}/night
+                MMK {Math.floor(Number(room.price))}/night
               </p>
             )}
           </div>

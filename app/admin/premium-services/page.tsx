@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, DollarSign } from "lucide-react";
+import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import Layout from "@/app/components/Layout";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -157,8 +157,7 @@ export default function PremiumServicesPage() {
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="text-xl font-semibold">{service.serviceName}</h3>
                     <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                      <DollarSign size={14} />
-                      {service.price}
+                      MMK {Math.floor(service.price)}
                     </span>
                   </div>
 

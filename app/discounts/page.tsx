@@ -176,7 +176,7 @@ export default function DiscountsPage() {
                       <td className="px-4 py-3">
                         {discount.discountType === "percentage"
                           ? `${discount.discountValue}%`
-                          : `$${discount.discountValue}`}
+                          : `MMK ${Math.floor(discount.discountValue)}`}
                       </td>
 
                       <td className="px-4 py-3 text-sm">

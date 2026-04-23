@@ -20,8 +20,30 @@ export async function GET(
     if (rows.length === 0) {
       return NextResponse.json({ error: "Staff not found" }, { status: 404 });
     }
-    
-    return NextResponse.json(rows[0]);
+
+    const staff = rows[0];
+
+    // Fetch Performance Data (Last 30 Days)
+    const [performanceRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT 
+        IFNULL(SUM(worked_hours), 0) as totalWorkedHours,
+        IFNULL(SUM(overtime_minutes), 0) as totalOvertimeMinutes,
+        IFNULL(SUM(late_minutes), 0) as totalLateMinutes
+      FROM schedule_attendance
+      WHERE staff_id = ? 
+        AND schedule_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        AND attendance_status != 'cancelled'
+      `,
+      [id]
+    );
+
+    return NextResponse.json({
+      ...staff,
+      performance: {
+        stats: performanceRows[0]
+      }
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });

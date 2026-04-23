@@ -7,7 +7,7 @@ import {
   ArrowLeft,
   Users,
   TrendingUp,
-  DollarSign,
+  Coins,
   Calendar,
   BarChart3,
   Target
@@ -141,7 +141,7 @@ export default function StaffEfficiencyReport() {
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
             <div className="p-3 bg-red-50 text-red-600 rounded-2xl w-fit">
-              <DollarSign size={24} />
+              <Coins size={24} />
             </div>
             <div>
               <div className="text-sm font-bold text-gray-400 uppercase">

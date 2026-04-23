@@ -188,8 +188,9 @@ export default function BookingPage() {
   }, [selectedServices]);
 
   const maxPointsByAmount = useMemo(() => {
-    return Math.floor(serviceSubtotal);
-  }, [serviceSubtotal]);
+    // Total subtotal / 1000 = max points needed to cover everything
+    return Math.floor((roomSubtotal + serviceSubtotal) / 1000);
+  }, [roomSubtotal, serviceSubtotal]);
 
   const maxPointsUsable = useMemo(() => {
     const customerPoints = Number(latestPoints || 0);
@@ -198,8 +199,9 @@ export default function BookingPage() {
 
   const totalAmount = useMemo(() => {
     const safePoints = Math.min(Number(pointsToUse || 0), maxPointsUsable);
+    const pointsDiscount = safePoints * 1000;
     const total =
-      roomSubtotal + serviceSubtotal - safePoints + Number(taxAmount || 0);
+      roomSubtotal + serviceSubtotal - pointsDiscount + Number(taxAmount || 0);
     return total > 0 ? total : 0;
   }, [roomSubtotal, serviceSubtotal, pointsToUse, taxAmount, maxPointsUsable]);
 
@@ -458,7 +460,7 @@ export default function BookingPage() {
                     .map((room) => (
                       <option key={room.roomID} value={room.roomID}>
                         {room.roomNumber} - {room.roomType} - MMK{" "}
-                        {Number(room.finalPrice).toFixed(2)}
+                        {Number(room.finalPrice).toFixed(0)}
                       </option>
                     ))}
                 </select>
@@ -484,7 +486,7 @@ export default function BookingPage() {
                             {room.roomNumber} - {room.roomType}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            MMK {Number(room.finalPrice).toFixed(2)} / night
+                            MMK {Number(room.finalPrice).toFixed(0)} / night
                           </p>
                           <p className="text-sm text-gray-600">
                             Max guests: {room.person}
@@ -566,7 +568,7 @@ export default function BookingPage() {
                       key={service.premiumServiceId}
                       value={service.premiumServiceId}
                     >
-                      {service.serviceName} - MMK {Number(service.price).toFixed(2)}
+                      {service.serviceName} - MMK {Number(service.price).toFixed(0)}
                     </option>
                   ))}
                 </select>
@@ -582,7 +584,7 @@ export default function BookingPage() {
                       <div>
                         <h3 className="font-semibold">{service.serviceName}</h3>
                         <p className="text-sm text-gray-600">
-                          Base price: MMK {Number(service.price).toFixed(2)}
+                          Base price: MMK {Number(service.price).toFixed(0)}
                         </p>
                       </div>
 
@@ -671,12 +673,12 @@ export default function BookingPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span>Room subtotal</span>
-                <span>MMK {roomSubtotal.toFixed(2)}</span>
+                <span>MMK {roomSubtotal.toFixed(0)}</span>
               </div>
 
               <div className="flex justify-between">
                 <span>Service subtotal</span>
-                <span>MMK {serviceSubtotal.toFixed(2)}</span>
+                <span>MMK {serviceSubtotal.toFixed(0)}</span>
               </div>
 
               <div>
@@ -697,7 +699,7 @@ export default function BookingPage() {
                   className="w-full border rounded-lg px-3 py-2"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Available to use: {maxPointsUsable}
+                  1 Point = 1,000 MMK | Available: {maxPointsUsable}
                 </p>
               </div>
 
@@ -714,7 +716,7 @@ export default function BookingPage() {
 
               <div className="border-t pt-3 flex justify-between font-semibold text-base">
                 <span>Total</span>
-                <span>MMK {totalAmount.toFixed(2)}</span>
+                <span>MMK {totalAmount.toFixed(0)}</span>
               </div>
 
               <div className="pt-3">

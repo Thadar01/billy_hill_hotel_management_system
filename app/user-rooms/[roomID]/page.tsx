@@ -136,13 +136,13 @@ const hasDiscount =
                   <div className="text-right">
                 {hasDiscount ? (
                   <>
-                    <p className="text-lg text-gray-400 line-through">${room.price}</p>
-                    <p className="text-3xl font-bold text-red-600">${room.finalPrice}</p>
+                    <p className="text-lg text-gray-400 line-through">MMK {Math.floor(Number(room.price))}</p>
+                    <p className="text-3xl font-bold text-red-600">MMK {Math.floor(Number(room.finalPrice))}</p>
                     <p className="text-gray-500">per night</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-3xl font-bold text-blue-600">${room.price}</p>
+                    <p className="text-3xl font-bold text-blue-600">MMK {Math.floor(Number(room.price))}</p>
                     <p className="text-gray-500">per night</p>
                   </>
                 )}
