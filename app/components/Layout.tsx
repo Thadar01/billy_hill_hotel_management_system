@@ -65,25 +65,33 @@ export default function Layout({ children }: LayoutProps) {
       "/admin/bookings",
       "/schedules",
       "/admin/feedbacks",
+      "/admin/customers",
     ],
     "staff manager": [
       "/schedules",
       "/rooms",
       "/housekeeping-schedules",
       "/admin/feedbacks",
+      "/admin/customers",
+      "/admin/staff/reports",
+      "/admin/reports/services",
     ],
-    housekeeping: ["/rooms", "/housekeeping-schedules"],
+    housekeeping: ["/rooms", "/schedules", "/housekeeping-schedules"],
     "finance manager": [
       "/payroll",
       "/admin/refunds",
       "/admin/bookings",
       "/schedules",
+      "/admin/staff/reports",
+      "/admin/reports/services",
     ],
     "finance staff": [
       "/payroll",
       "/admin/refunds",
       "/admin/bookings",
       "/schedules",
+      "/admin/staff/reports",
+      "/admin/reports/services",
     ],
   };
 
@@ -93,7 +101,7 @@ export default function Layout({ children }: LayoutProps) {
       : "px-4 py-2 rounded hover:bg-gray-100 text-black";
 
   const renderLink = (href: string, label: string) => {
-    if (isGM || href === "/" || href === "/staff/settings") {
+    if (isGM || href === "/staff-dashboard" || href === "/staff/settings") {
       return (
         <Link href={href} className={navClass(href)}>
           {label}
@@ -136,7 +144,7 @@ export default function Layout({ children }: LayoutProps) {
 
       <nav className="flex-1 flex flex-col p-4 gap-1.5 overflow-y-auto bg-white scrollbar-thin">
         <div className="flex flex-col gap-1" onClick={() => onClose?.()}>
-          {renderLink("/", "Main Dashboard")}
+          {renderLink("/staff-dashboard", "Main Dashboard")}
           {renderLink("/staff", "Staffs")}
           {renderLink("/schedules", "Schedules")}
           {renderLink("/payroll", "Payroll")}
@@ -147,6 +155,7 @@ export default function Layout({ children }: LayoutProps) {
           {renderLink("/discounts", "Discounts")}
           {renderLink("/housekeeping-schedules", "Housekeeping Schedules")}
           {renderLink("/admin/feedbacks", "Feedbacks")}
+          {renderLink("/admin/customers", "Customers")}
         </div>
 
 

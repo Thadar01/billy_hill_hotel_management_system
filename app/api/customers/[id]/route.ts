@@ -20,7 +20,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const [rows] = await pool.query<CustomerRow[]>(
+    const [customerRows] = await pool.query<CustomerRow[]>(
       `
       SELECT customerID, fullName, email, phone, createdAt, points
       FROM customers
@@ -29,14 +29,54 @@ export async function GET(
       [id]
     );
 
-    if (rows.length === 0) {
+    if (customerRows.length === 0) {
       return NextResponse.json(
         { error: "Customer not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ customer: rows[0] });
+    // Fetch Bookings
+    const [bookingRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT 
+        bookingID, 
+        DATE_FORMAT(checkInDate, '%Y-%m-%d') as checkInDate, 
+        DATE_FORMAT(checkOutDate, '%Y-%m-%d') as checkOutDate, 
+        totalAmount, 
+        bookingStatus,
+        paymentStatus,
+        createdAt
+      FROM bookings
+      WHERE customerID = ?
+      ORDER BY createdAt DESC
+      `,
+      [id]
+    );
+
+    // Fetch Feedbacks with Room Info
+    const [feedbackRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT 
+        f.*,
+        GROUP_CONCAT(DISTINCT r.roomNumber SEPARATOR ', ') as roomNumbers
+      FROM feedbacks f
+      LEFT JOIN bookings b ON f.bookingID = b.bookingID
+      LEFT JOIN booking_rooms br ON b.bookingID = br.bookingID
+      LEFT JOIN rooms r ON br.roomID = r.roomID
+      WHERE f.customerID = ?
+      GROUP BY f.feedbackId
+      ORDER BY f.createdAt DESC
+      `,
+      [id]
+    );
+    console.log("DEBUG: Feedback Rows for", id, feedbackRows);
+
+    return NextResponse.json({ 
+      customer: customerRows[0],
+      bookings: bookingRows,
+      feedbacks: feedbackRows
+    });
   } catch (error) {
     console.error("Fetch customer error:", error);
     return NextResponse.json(

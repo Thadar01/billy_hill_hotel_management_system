@@ -218,7 +218,7 @@ export default function PayrollPage() {
                                         </td>
 
                                         <td className="px-6 py-4 font-bold">
-                                            ${p.gross_pay.toLocaleString(undefined, {
+                                            MMK {p.gross_pay.toLocaleString(undefined, {
                                                 minimumFractionDigits: 2,
                                             })}
                                         </td>

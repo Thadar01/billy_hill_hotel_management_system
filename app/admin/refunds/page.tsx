@@ -220,7 +220,7 @@ export default function AdminRefundsPage() {
                       </td>
 
                       <td className="px-4 py-3 font-semibold text-red-600">
-                        ${formatMoney(refund.refundAmount)}
+                        MMK {formatMoney(refund.refundAmount)}
                       </td>
 
                       <td className="px-4 py-3 capitalize">

@@ -457,7 +457,7 @@ export default function BookingPage() {
                     )
                     .map((room) => (
                       <option key={room.roomID} value={room.roomID}>
-                        {room.roomNumber} - {room.roomType} - $
+                        {room.roomNumber} - {room.roomType} - MMK{" "}
                         {Number(room.finalPrice).toFixed(2)}
                       </option>
                     ))}
@@ -484,7 +484,7 @@ export default function BookingPage() {
                             {room.roomNumber} - {room.roomType}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            ${Number(room.finalPrice).toFixed(2)} / night
+                            MMK {Number(room.finalPrice).toFixed(2)} / night
                           </p>
                           <p className="text-sm text-gray-600">
                             Max guests: {room.person}
@@ -566,7 +566,7 @@ export default function BookingPage() {
                       key={service.premiumServiceId}
                       value={service.premiumServiceId}
                     >
-                      {service.serviceName} - ${Number(service.price).toFixed(2)}
+                      {service.serviceName} - MMK {Number(service.price).toFixed(2)}
                     </option>
                   ))}
                 </select>
@@ -582,7 +582,7 @@ export default function BookingPage() {
                       <div>
                         <h3 className="font-semibold">{service.serviceName}</h3>
                         <p className="text-sm text-gray-600">
-                          Base price: ${Number(service.price).toFixed(2)}
+                          Base price: MMK {Number(service.price).toFixed(2)}
                         </p>
                       </div>
 
@@ -671,12 +671,12 @@ export default function BookingPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span>Room subtotal</span>
-                <span>${roomSubtotal.toFixed(2)}</span>
+                <span>MMK {roomSubtotal.toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between">
                 <span>Service subtotal</span>
-                <span>${serviceSubtotal.toFixed(2)}</span>
+                <span>MMK {serviceSubtotal.toFixed(2)}</span>
               </div>
 
               <div>
@@ -714,7 +714,7 @@ export default function BookingPage() {
 
               <div className="border-t pt-3 flex justify-between font-semibold text-base">
                 <span>Total</span>
-                <span>${totalAmount.toFixed(2)}</span>
+                <span>MMK {totalAmount.toFixed(2)}</span>
               </div>
 
               <div className="pt-3">

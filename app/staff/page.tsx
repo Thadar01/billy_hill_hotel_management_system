@@ -126,12 +126,22 @@ export default function StaffPage() {
             <h1 className="text-3xl font-semibold text-black">Staff Directory</h1>
             <p className="text-gray-500 text-sm">Manage team members, roles, and performance metrics</p>
           </div>
-          {isManager && <button
-            onClick={() => router.push("/staff/register")}
-            className="w-full py-3 rounded bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-          >
-            Register Staff
-          </button>}
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => router.push("/admin/staff/reports")}
+              className="px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm flex items-center justify-center gap-2"
+            >
+              Efficiency Report
+            </button>
+            {isManager && (
+              <button
+                onClick={() => router.push("/staff/register")}
+                className="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-md flex items-center justify-center gap-2"
+              >
+                Register Staff
+              </button>
+            )}
+          </div>
 
         </div>
 
@@ -216,7 +226,7 @@ export default function StaffPage() {
 
                 {isOpen && (
                   <div className="px-5 md:px-8 pb-8 pt-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className={`grid grid-cols-1 ${getRoleName(staff.role_id).toLowerCase() === 'housekeeping' ? 'lg:grid-cols-2' : ''} gap-8 border-t border-gray-100 pt-6`}>
+                    <div className="grid grid-cols-1 gap-8 border-t border-gray-100 pt-6">
                       {/* Detailed Info Card */}
                       <div className="space-y-6 p-2">
                         <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
@@ -265,38 +275,6 @@ export default function StaffPage() {
                           )}
                         </div>
                       </div>
-
-                      {/* Housekeeping Feedback Panel */}
-                      {getRoleName(staff.role_id).toLowerCase() === 'housekeeping' && (
-                        <div className="space-y-6 p-2">
-                          <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col h-full">
-                            <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Guest Experience Reviews</h4>
-                            {performanceData[staff.staff_id]?.feedbacks?.length > 0 ? (
-                              <div className="space-y-4 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
-                                {performanceData[staff.staff_id].feedbacks.map((fb: any) => (
-                                  <div key={fb.feedbackId} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                                    <div className="flex justify-between items-start mb-2">
-                                      <div>
-                                        <p className="text-xs font-semibold text-black">{fb.customerName}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Room {fb.roomNumber}</p>
-                                      </div>
-                                      <div className="flex text-amber-400 text-xs gap-0.5">
-                                        {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
-                                      </div>
-                                    </div>
-                                    <p className="text-xs text-gray-600 italic leading-relaxed">"{fb.comment}"</p>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
-                                <p className="text-[10px] font-bold uppercase tracking-widest">No feedback received</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     {isManager && <div className="flex flex-row sm:flex-col gap-4 mt-8 pt-6 mb-2 ml-2 mr-2 border-t border-gray-100">

@@ -93,13 +93,21 @@ export default function PremiumServicesPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Premium Services</h1>
-          {isManager && <Link
-            href="/admin/premium-services/add"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={20} />
-            Add New Service
-          </Link>}
+          <div className="flex gap-4">
+            <Link
+              href="/admin/reports/services"
+              className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-colors shadow-sm text-sm font-semibold"
+            >
+              Analyze Performance
+            </Link>
+            {isManager && <Link
+              href="/admin/premium-services/add"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+            >
+              <Plus size={20} />
+              Add New Service
+            </Link>}
+          </div>
 
         </div>
 

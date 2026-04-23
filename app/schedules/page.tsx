@@ -10,6 +10,7 @@ import {
   formatDateDisplay,
   formatDateLong,
   formatShiftTime,
+  formatTimeString,
 } from "./utils";
 import {
   Schedule,
@@ -538,12 +539,12 @@ export default function SchedulesPage() {
                                   <div className="flex flex-col gap-1 mt-2">
                                     {shift.actual_check_in && (
                                       <p className="text-[9px] text-green-600 font-bold uppercase">
-                                        In: {new Date(shift.actual_check_in).toLocaleTimeString()}
+                                        In: {formatTimeString(shift.actual_check_in)}
                                       </p>
                                     )}
                                     {shift.actual_check_out && (
                                       <p className="text-[9px] text-blue-600 font-bold uppercase">
-                                        Out: {new Date(shift.actual_check_out).toLocaleTimeString()}
+                                        Out: {formatTimeString(shift.actual_check_out)}
                                       </p>
                                     )}
                                   </div>

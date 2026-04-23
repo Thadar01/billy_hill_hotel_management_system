@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { BarChart3 } from "lucide-react";
 import Layout from "@/app/components/Layout";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -222,9 +223,18 @@ export default function AdminBookingsPage() {
   return (
     <Layout>
       <div className="p-6 text-black">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Bookings</h1>
-          <p className="text-gray-600 mt-1">Manage bookings and refunds</p>
+        <div className="mb-6 flex justify-between items-end">
+          <div>
+            <h1 className="text-3xl font-bold">Bookings</h1>
+            <p className="text-gray-600 mt-1">Manage bookings and refunds</p>
+          </div>
+          <Link
+            href="/admin/bookings/reports"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
+          >
+            <BarChart3 className="w-5 h-5" />
+            View Occupancy Report
+          </Link>
         </div>
 
         <div className="bg-white rounded-2xl shadow p-4 mb-6">
@@ -343,10 +353,10 @@ export default function AdminBookingsPage() {
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">${formatMoney(booking.totalAmount)}</td>
-                    <td className="px-4 py-3">${formatMoney(booking.paidAmount)}</td>
+                    <td className="px-4 py-3">MMK {formatMoney(booking.totalAmount)}</td>
+                    <td className="px-4 py-3">MMK {formatMoney(booking.paidAmount)}</td>
                     <td className="px-4 py-3 font-semibold text-blue-600">{booking.pointsUsed}</td>
-                    <td className="px-4 py-3">${formatMoney(booking.balanceAmount)}</td>
+                    <td className="px-4 py-3">MMK {formatMoney(booking.balanceAmount)}</td>
                     <td className="px-4 py-3">
                       {Number(booking.refundedAmount) > 0 ? (
                         <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700 font-medium whitespace-nowrap">

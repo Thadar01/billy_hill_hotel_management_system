@@ -263,15 +263,15 @@ export default function RoomCard({
             {hasDiscount ? (
               <>
                 <p className="text-sm text-gray-400 line-through">
-                  ${room.price}/night
+                  MMK {room.price}/night
                 </p>
                 <p className="text-xl font-bold text-red-600">
-                  ${room.finalPrice}/night
+                  MMK {room.finalPrice}/night
                 </p>
               </>
             ) : (
               <p className="text-xl font-bold text-blue-600">
-                ${room.price}/night
+                MMK {room.price}/night
               </p>
             )}
           </div>
@@ -287,7 +287,7 @@ export default function RoomCard({
                 <p className="text-xs text-red-600">
                   {room.activeDiscount.discountType === "percentage"
                     ? `${room.activeDiscount.discountValue}% off`
-                    : `$${room.activeDiscount.discountValue} off`}
+                    : `MMK ${room.activeDiscount.discountValue} off`}
                 </p>
                 {room.activeDiscount.description && (
                   <p className="mt-1 text-xs text-red-500">

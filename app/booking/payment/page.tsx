@@ -53,7 +53,7 @@ export default function PaymentPage() {
       }
 
       if (paymentAmount < tempBooking.minDeposit) {
-        alert(`Minimum deposit of $${tempBooking.minDeposit.toFixed(2)} is required.`);
+        alert(`Minimum deposit of MMK ${tempBooking.minDeposit.toFixed(2)} is required.`);
         return;
       }
 
@@ -165,14 +165,14 @@ export default function PaymentPage() {
                   
                   <div className="flex justify-between items-center text-lg">
                     <div className="text-gray-600">Total Amount</div>
-                    <div className="font-bold text-2xl">${tempBooking.totalAmount.toFixed(2)}</div>
+                    <div className="font-bold text-2xl">MMK {tempBooking.totalAmount.toFixed(2)}</div>
                   </div>
                 </div>
 
                 <div className="bg-blue-50/50 rounded-xl p-5 border border-blue-100/50">
                   <div className="flex justify-between items-center text-blue-800">
                     <span className="font-medium">Mandatory Deposit (30%)</span>
-                    <span className="font-bold text-xl">${tempBooking.minDeposit.toFixed(2)}</span>
+                    <span className="font-bold text-xl">MMK {tempBooking.minDeposit.toFixed(2)}</span>
                   </div>
                   <p className="text-[11px] text-blue-600/80 mt-2 font-medium bg-white/50 p-2 rounded-lg">
                     Secure your reservation with a down payment today.
@@ -220,7 +220,7 @@ export default function PaymentPage() {
                 <div className="relative">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">Amount to Pay Now</label>
                   <div className="relative flex items-center">
-                    <span className="absolute left-5 text-gray-500 font-bold text-xl">$</span>
+                    <span className="absolute left-5 text-gray-500 font-bold text-lg">MMK</span>
                     <input
                         type="number"
                         min={tempBooking.minDeposit}
@@ -232,8 +232,8 @@ export default function PaymentPage() {
                     />
                   </div>
                   <div className="mt-2 flex justify-between text-[11px]">
-                     <span className="text-blue-600 font-bold uppercase">Min: ${tempBooking.minDeposit.toFixed(2)}</span>
-                     <span className="text-gray-400">Total: ${tempBooking.totalAmount.toFixed(2)}</span>
+                     <span className="text-blue-600 font-bold uppercase">Min: MMK {tempBooking.minDeposit.toFixed(2)}</span>
+                     <span className="text-gray-400">Total: MMK {tempBooking.totalAmount.toFixed(2)}</span>
                   </div>
                 </div>
 
