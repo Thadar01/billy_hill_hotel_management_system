@@ -144,7 +144,16 @@ export default function PaymentPage() {
   return (
     <UserLayout>
       <div className="max-w-4xl mx-auto px-4 py-12 text-black bg-gray-50/30 min-h-screen">
-        <h1 className="text-4xl font-bold mb-10 text-center">Finalize Your Payment</h1>
+        <div className="flex items-center justify-center gap-2 mb-10">
+          <button
+            onClick={() => router.back()}
+            className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+            title="Back"
+          >
+            &#8592;
+          </button>
+          <h1 className="text-3xl font-bold text-center">Finalize Your Payment</h1>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Summary */}
@@ -182,12 +191,7 @@ export default function PaymentPage() {
               </div>
             </div>
             
-            <button 
-                onClick={() => router.back()}
-                className="w-full py-3 text-gray-500 hover:text-black transition-colors text-sm font-medium flex items-center justify-center gap-2"
-            >
-                ← Edit booking details
-            </button>
+
           </div>
 
           {/* Payment Form */}

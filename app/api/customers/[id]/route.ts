@@ -72,10 +72,22 @@ export async function GET(
     );
     console.log("DEBUG: Feedback Rows for", id, feedbackRows);
 
+    // Fetch Customer Preferences
+    const [preferenceRows] = await pool.query<RowDataPacket[]>(
+      `
+      SELECT id, preferenceKey, preferenceValue, createdAt
+      FROM customer_preference_items
+      WHERE customerID = ?
+      ORDER BY preferenceKey ASC, preferenceValue ASC
+      `,
+      [id]
+    );
+
     return NextResponse.json({ 
       customer: customerRows[0],
       bookings: bookingRows,
-      feedbacks: feedbackRows
+      feedbacks: feedbackRows,
+      preferences: preferenceRows
     });
   } catch (error) {
     console.error("Fetch customer error:", error);

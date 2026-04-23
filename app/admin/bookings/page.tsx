@@ -269,7 +269,6 @@ export default function AdminBookingsPage() {
               <option value="unpaid">unpaid</option>
               <option value="partially_paid">partially_paid</option>
               <option value="paid">paid</option>
-              <option value="partially_refunded">partially_refunded</option>
               <option value="refunded">refunded</option>
             </select>
           </div>

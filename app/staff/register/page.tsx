@@ -69,12 +69,12 @@ export default function RegisterPage() {
 
   return (
     <Layout>
-      <div className="flex flex-col gap-6 max-w-md w-full text-black">
+      <div className="flex flex-col gap-6 max-w-md w-full mx-auto text-black">
         {/* Back button with icon before title */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => router.push("/staff")}
-            className="text-black text-xl font-bold"
+            className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
             title="Back"
           >
             &#8592;

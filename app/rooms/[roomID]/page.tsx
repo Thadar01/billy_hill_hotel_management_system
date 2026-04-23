@@ -104,15 +104,7 @@ export default function RoomDetailPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 text-black">
-        <button
-          onClick={() => router.back()}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft size={20} />
-          Back to Rooms
-        </button>
-
+      <div className="max-w-4xl mx-auto px-4 py-8 text-black">
         <div className="overflow-hidden rounded-lg bg-white shadow-lg">
           <div className="grid grid-cols-1 gap-4 p-6 lg:grid-cols-2">
             <div className="relative h-96 overflow-hidden rounded-lg bg-gray-200">
@@ -156,7 +148,16 @@ export default function RoomDetailPage() {
           <div className="border-t p-6">
             <div className="mb-4 flex items-start justify-between">
               <div>
-                <h1 className="mb-2 text-3xl font-bold">Room {room.roomNumber}</h1>
+                <div className="flex items-center gap-2 mb-2">
+                  <button
+                    onClick={() => router.back()}
+                    className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+                    title="Back"
+                  >
+                    &#8592;
+                  </button>
+                  <h1 className="text-3xl font-bold">Room {room.roomNumber}</h1>
+                </div>
                 <p className="text-lg text-gray-600">{room.roomType}</p>
               </div>
 

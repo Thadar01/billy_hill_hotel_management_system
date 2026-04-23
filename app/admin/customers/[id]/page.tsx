@@ -45,6 +45,12 @@ interface Feedback {
   roomNumbers?: string;
 }
 
+interface Preference {
+  id: number;
+  preferenceKey: string;
+  preferenceValue: string;
+}
+
 function StarDisplay({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
@@ -75,6 +81,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [preferences, setPreferences] = useState<Preference[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -92,6 +99,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       setCustomer(data.customer);
       setBookings(data.bookings || []);
       setFeedbacks(data.feedbacks || []);
+      setPreferences(data.preferences || []);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : "Failed to load details");
@@ -125,7 +133,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         {/* Breadcrumb / Back */}
         <Link href="/admin/customers" className="flex items-center gap-2 text-gray-500 hover:text-black transition-colors w-fit">
           <ArrowLeft size={18} />
-          <span className="text-sm font-semibold">Back to Customers</span>
         </Link>
 
         {/* Profile Header */}
@@ -232,39 +239,65 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
 
-          {/* Feedback Section */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <MessageSquare className="text-blue-600" />
-              Recent Feedbacks
-            </h2>
 
-            <div className="space-y-4 text-black">
-              {feedbacks.length === 0 ? (
-                <div className="bg-white p-12 rounded-3xl shadow-sm border border-gray-100 text-center text-gray-400 italic">
-                  No feedbacks from this guest.
-                </div>
-              ) : (
-                feedbacks.map((f) => (
-                  <div key={f.feedbackId} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <StarDisplay rating={f.rating} />
-                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit uppercase tracking-widest mt-1 inline-block border border-blue-100">
-                          {f.category || "N/A"}
-                        </span>
-                        {f.roomNumbers && (
-                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1 mt-1 ml-1">
-                            <span>Room: {f.roomNumbers}</span>
-                          </div>
-                        )}
+          {/* Right Column: Feedbacks & Preferences */}
+          <div className="space-y-8">
+            {/* Preferences Section */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Star className="text-blue-600" />
+                Guest Preferences
+              </h2>
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                {preferences.length === 0 ? (
+                  <p className="text-gray-400 italic text-center py-4">No specific preferences recorded.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {preferences.map((pref) => (
+                      <div key={pref.id} className="flex justify-between items-center border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+                        <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">{pref.preferenceKey}</span>
+                        <span className="text-sm font-semibold text-gray-900 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">{pref.preferenceValue}</span>
                       </div>
-                      <span className="text-[10px] text-gray-400 font-bold uppercase">{new Date(f.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 italic">"{f.comment}"</p>
+                    ))}
                   </div>
-                ))
-              )}
+                )}
+              </div>
+            </div>
+
+            {/* Feedback Section */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <MessageSquare className="text-blue-600" />
+                Recent Feedbacks
+              </h2>
+
+              <div className="space-y-4 text-black">
+                {feedbacks.length === 0 ? (
+                  <div className="bg-white p-12 rounded-3xl shadow-sm border border-gray-100 text-center text-gray-400 italic">
+                    No feedbacks from this guest.
+                  </div>
+                ) : (
+                  feedbacks.map((f) => (
+                    <div key={f.feedbackId} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-1">
+                          <StarDisplay rating={f.rating} />
+                          <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit uppercase tracking-widest mt-1 inline-block border border-blue-100">
+                            {f.category || "N/A"}
+                          </span>
+                          {f.roomNumbers && (
+                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1 mt-1 ml-1">
+                              <span>Room: {f.roomNumbers}</span>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase">{new Date(f.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 italic">"{f.comment}"</p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

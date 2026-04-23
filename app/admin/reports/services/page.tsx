@@ -68,9 +68,8 @@ export default function ServicePerformanceReport() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
-            <Link href="/staff-dashboard" className="flex items-center gap-2 text-gray-400 hover:text-black transition-colors w-fit mb-4">
+            <Link href="/admin/premium-services" className="flex items-center gap-2 text-gray-400 hover:text-black transition-colors w-fit mb-4">
               <ArrowLeft size={18} />
-              <span className="text-sm font-semibold">Back to Dashboard</span>
             </Link>
             <h1 className="text-3xl font-bold tracking-tight">Service Performance</h1>
             <p className="text-gray-500">Track premium service usage, popularity, and revenue impact.</p>

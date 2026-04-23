@@ -85,13 +85,13 @@ export default function StaffDashboardPage() {
                 <option value={90}>Last 90 Days</option>
               </select>
             </div>
-            <Link
+            {/* <Link
               href="/admin/bookings/reports"
               className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm text-gray-700"
             >
               <BarChart3 className="w-4 h-4" />
               Occupancy Report
-            </Link>
+            </Link> */}
           </div>
         </div>
 

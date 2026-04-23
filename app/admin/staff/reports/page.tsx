@@ -95,11 +95,11 @@ export default function StaffEfficiencyReport() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
             <Link
-              href="/staff-dashboard"
+              href="/staff"
               className="flex items-center gap-2 text-gray-500 hover:text-black transition-colors w-fit mb-4"
             >
               <ArrowLeft size={18} />
-              <span className="text-sm font-semibold">Back to Dashboard</span>
+              <span className="text-sm font-semibold">Back to Staff</span>
             </Link>
 
             <h1 className="text-3xl font-bold tracking-tight">
@@ -220,61 +220,6 @@ export default function StaffEfficiencyReport() {
             </div>
           </div>
 
-          {/* Insight */}
-          <div
-            style={{ backgroundColor: '#1e3a8a' }}
-            className="p-8 rounded-3xl text-white flex flex-col justify-between shadow-xl"
-          >
-            <div>
-              <h3 className="text-2xl font-bold mb-4">Workforce Insight</h3>
-
-              <div className="space-y-6">
-
-                <div className="bg-white/10 p-4 rounded-2xl">
-                  <div className="text-xs text-blue-100 uppercase font-bold tracking-wider mb-1">
-                    Efficiency Level
-                  </div>
-                  <div className="text-lg font-bold">
-                    {data.revenueToStaffRatio > data.costPerBooking * 10
-                      ? "Optimized"
-                      : "Growing"}
-                  </div>
-                </div>
-
-                {/* Revenue Recovery */}
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-blue-100 font-bold">Revenue Recovery Status</span>
-                    <span className="font-black text-white">{revenueRecovery.toFixed(1)}%</span>
-                  </div>
- 
-                  <div style={{ 
-                    height: '16px', 
-                    width: '100%', 
-                    backgroundColor: 'rgba(255,255,255,0.15)', 
-                    borderRadius: '8px', 
-                    overflow: 'hidden',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    position: 'relative'
-                  }}>
-                    <div style={{ 
-                      height: '100%', 
-                      width: `${recoveryWidth}%`, 
-                      backgroundColor: '#ff4444', 
-                      borderRadius: '8px',
-                      boxShadow: '0 0 15px rgba(255,68,68,0.8)',
-                      transition: 'width 1s ease-in-out'
-                    }}></div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <div className="mt-8 text-sm text-blue-100 italic opacity-80">
-              Tip: Aim for revenue recovery above 200% for sustainable operations.
-            </div>
-          </div>
         </div>
       </div>
     </Layout>

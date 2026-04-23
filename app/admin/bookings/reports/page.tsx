@@ -123,7 +123,7 @@ export default function BookingOccupancyReport() {
               </div>
             </div>
 
-            {/* Occupancy Chart (CSS-based) */}
+            {/* Occupancy Chart (CSS-based)
             <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
               <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-blue-600" />
@@ -159,7 +159,7 @@ export default function BookingOccupancyReport() {
                 <span>{data.dailyStats[Math.floor(data.dailyStats.length / 2)]?.date}</span>
                 <span>{data.dailyStats[data.dailyStats.length - 1]?.date}</span>
               </div>
-            </div>
+            </div> */}
 
             {/* Peak Periods Table */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

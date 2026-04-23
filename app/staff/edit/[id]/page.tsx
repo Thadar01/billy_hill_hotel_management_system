@@ -99,7 +99,16 @@ export default function EditStaffPage() {
   return (
     <Layout>
       <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow text-black">
-        <h1 className="text-2xl font-semibold mb-4 text-black">Edit Staff</h1>
+        <div className="flex items-center gap-2 mb-6">
+          <button
+            onClick={() => router.push("/staff")}
+            className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+            title="Back"
+          >
+            &#8592;
+          </button>
+          <h1 className="text-3xl font-semibold text-black">Edit Staff</h1>
+        </div>
 
         <div className="flex flex-col gap-4">
           <div>

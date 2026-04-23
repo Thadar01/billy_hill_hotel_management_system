@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Layout from "../../components/Layout";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader2 } from "lucide-react";
 
 export default function StaffSettingsPage() {
+  const router = useRouter();
   const { user, setUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -143,9 +145,18 @@ export default function StaffSettingsPage() {
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-black">
-                {user?.staff_name}&apos;s Settings
-              </h1>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => router.back()}
+                  className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+                  title="Back"
+                >
+                  &#8592;
+                </button>
+                <h1 className="text-3xl font-bold text-black">
+                  {user?.staff_name}&apos;s Settings
+                </h1>
+              </div>
               <p className="mt-2 text-sm text-gray-600">
                 Manage your staff account information and security.
               </p>

@@ -243,7 +243,16 @@ if (!validateShiftTimes(form.start_time, form.end_time)) {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl text-black mb-6">Create Weekly Schedule</h1>
+        <div className="flex items-center gap-2 mb-6">
+          <button
+            onClick={() => router.push("/schedules")}
+            className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+            title="Back"
+          >
+            &#8592;
+          </button>
+          <h1 className="text-3xl font-semibold text-black">Create Weekly Schedule</h1>
+        </div>
 
         {/* Staff multi-select */}
         <div className="mb-6">

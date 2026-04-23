@@ -43,7 +43,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
     person: initialData?.person || "",
     bathroom: initialData?.bathroom || "",
     isPetAllowed: initialData?.isPetAllowed || false,
-        isBalcony: initialData?.isBalcony || false,
+    isBalcony: initialData?.isBalcony || false,
     roomStatus: initialData?.roomStatus || "available",
   });
 
@@ -133,14 +133,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto text-black">
-      <button
-        type="button"
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
-      >
-        <ArrowLeft size={20} />
-        Back
-      </button>
+
 
       <div className="bg-white rounded-lg shadow-lg p-6">
         {error && (
@@ -323,7 +316,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
               Pets Allowed
             </label>
           </div>
-            <div className="flex items-center">
+          <div className="flex items-center">
             <input
               type="checkbox"
               name="isBalcony"

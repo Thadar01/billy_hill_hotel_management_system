@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Layout from "../../components/Layout";
 
 interface PayrollDetail {
@@ -22,6 +22,7 @@ interface PayrollDetail {
 }
 
 export default function ReceiptPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params.id;
 
@@ -77,9 +78,18 @@ export default function ReceiptPage() {
             id="print-area"
             className="max-w-xl mx-auto bg-white border border-gray-300 p-6 rounded shadow-sm"
           >
-            <h1 className="text-2xl font-bold mb-6 text-center">
-              Payroll Receipt
-            </h1>
+            <div className="flex items-center gap-2 mb-6">
+              <button
+                onClick={() => router.back()}
+                className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+                title="Back"
+              >
+                &#8592;
+              </button>
+              <h1 className="text-2xl font-bold">
+                Payroll Receipt
+              </h1>
+            </div>
 
             <div className="space-y-2 text-sm">
               <p><strong>Staff:</strong> {payroll.staff_name}</p>

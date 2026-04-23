@@ -95,14 +95,15 @@ export default function ViewSchedulePage() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl text-black">Schedule Details</h1>
+        <div className="flex items-center gap-2 mb-6">
           <button
             onClick={() => router.back()}
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+            title="Back"
           >
-            Back
+            &#8592;
           </button>
+          <h1 className="text-3xl font-semibold text-black">Schedule Details</h1>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

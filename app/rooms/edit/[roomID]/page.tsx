@@ -68,8 +68,17 @@ export default function EditRoomPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 text-black">
-        <h1 className="text-2xl font-bold mb-6">Edit Room</h1>
+      <div className="max-w-4xl mx-auto px-4 py-8 text-black">
+        <div className="flex items-center gap-2 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+            title="Back"
+          >
+            &#8592;
+          </button>
+          <h1 className="text-3xl font-semibold text-black">Edit Room</h1>
+        </div>
         <RoomForm initialData={room} onSubmit={handleSubmit} />
       </div>
     </Layout>
