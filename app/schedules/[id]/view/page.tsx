@@ -127,8 +127,8 @@ export default function ViewSchedulePage() {
             <h2 className="text-xl font-semibold text-black mb-4">Attendance Details</h2>
             <div className="p-4 bg-gray-50 rounded-lg space-y-2 text-gray-700">
               <p><span className="font-medium text-gray-800">Attendance Status:</span> {schedule.attendance_status || 'pending'}</p>
-              <p><span className="font-medium text-gray-800">Actual Check In:</span> {formatTimeDisplay(schedule.actual_check_in)}</p>
-              <p><span className="font-medium text-gray-800">Actual Check Out:</span> {formatTimeDisplay(schedule.actual_check_out)}</p>
+              <p><span className="font-medium text-gray-800">Actual Duty In:</span> {formatTimeDisplay(schedule.actual_check_in)}</p>
+              <p><span className="font-medium text-gray-800">Actual Duty Out:</span> {formatTimeDisplay(schedule.actual_check_out)}</p>
               <p><span className="font-medium text-gray-800">Worked Hours:</span> {schedule.worked_hours}h</p>
               <p><span className="font-medium text-gray-800">Late Minutes:</span> {schedule.late_minutes} min</p>
               <p><span className="font-medium text-gray-800">Overtime Minutes:</span> {schedule.overtime_minutes} min</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import UserLayout from "../components/UserLayout";
 import UserRoomCard from "../rooms/components/UserRoomCard";
@@ -45,8 +46,12 @@ export default function RoomsPage() {
   const today = new Date().toISOString().split("T")[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
-  const [checkIn, setCheckIn] = useState(today);
-  const [checkOut, setCheckOut] = useState(tomorrow);
+  const searchParams = useSearchParams();
+  const initialCheckIn = searchParams.get("checkIn") || today;
+  const initialCheckOut = searchParams.get("checkOut") || tomorrow;
+
+  const [checkIn, setCheckIn] = useState(initialCheckIn);
+  const [checkOut, setCheckOut] = useState(initialCheckOut);
 
   useEffect(() => {
     fetchRooms();

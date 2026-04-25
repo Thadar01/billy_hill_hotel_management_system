@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Traditional CSS for visibility control */
+@media (min-width: 768px) {
+  .mobile-only-toggle {
+    display: none !important;
+  }
+}

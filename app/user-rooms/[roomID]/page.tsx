@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Pencil, Users, Bed, Bath, Maximize, PawPrint, MapPin } from "lucide-react";
+import { ArrowLeft, Pencil, Users, Bed, Bath, Maximize, PawPrint, MapPin, Cigarette, Wind } from "lucide-react";
 import UserLayout from "@/app/components/UserLayout";
 interface ActiveDiscount {
   discountID: number;
@@ -76,16 +76,17 @@ const hasDiscount =
   return (
     <UserLayout>
           <div className="container mx-auto px-4 py-8 text-black">
-      {/* Back Button */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
-      >
-        <ArrowLeft size={20} />
-        Back to Rooms
-      </button>
 
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden relative">
+        <div className="p-4 lg:px-6 lg:pt-6 pb-0 flex items-center">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 w-fit"
+          >
+            <ArrowLeft size={20} />
+            Back to Rooms
+          </button>
+        </div>
         {/* Image Gallery */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6">
           <div className="relative h-96 bg-gray-200 rounded-lg overflow-hidden">
@@ -189,9 +190,16 @@ const hasDiscount =
             )}
             {room.isBalcony && (
               <div className="bg-gray-50 p-4 rounded-lg">
-                <PawPrint className="text-blue-600 mb-2" size={24} />
+                <Wind className="text-blue-600 mb-2" size={24} />
                 <p className="text-sm text-gray-600">Balcony</p>
-                <p className="font-semibold">Allowed</p>
+                <p className="font-semibold">Available</p>
+              </div>
+            )}
+            {room.isBalcony && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <Cigarette className="text-blue-600 mb-2" size={24} />
+                <p className="text-sm text-gray-600">Smoking</p>
+                <p className="font-semibold">Available</p>
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, MessageSquare, Send, CheckCircle2 } from "lucide-react";
 
 interface FeedbackFormProps {
@@ -32,6 +32,36 @@ export default function FeedbackForm({ customerID, bookingID, onSuccess, onClose
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Load existing feedback for this booking
+  useEffect(() => {
+    if (!bookingID) return;
+    const loadExisting = async () => {
+      try {
+        const res = await fetch(`/api/feedbacks?bookingID=${bookingID}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const feedbacks = data.feedbacks || [];
+        if (feedbacks.length > 0) {
+          setIsEditing(true);
+          const newRatings: Record<string, number> = { ...CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: 0 }), {}) };
+          const newComments: Record<string, string> = { ...CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: "" }), {}) };
+          for (const fb of feedbacks) {
+            if (CATEGORIES.includes(fb.category)) {
+              newRatings[fb.category] = fb.rating;
+              newComments[fb.category] = fb.comment || "";
+            }
+          }
+          setRatings(newRatings);
+          setComments(newComments);
+        }
+      } catch (err) {
+        console.error("Failed to load existing feedback:", err);
+      }
+    };
+    loadExisting();
+  }, [bookingID]);
 
   const setRating = (category: string, value: number) => {
     setRatings(prev => ({ ...prev, [category]: value }));
@@ -183,7 +213,7 @@ export default function FeedbackForm({ customerID, bookingID, onSuccess, onClose
           ) : (
             <>
               <Send size={18} />
-              Submit All Feedback
+              {isEditing ? "Update Feedback" : "Submit All Feedback"}
             </>
           )}
         </button>

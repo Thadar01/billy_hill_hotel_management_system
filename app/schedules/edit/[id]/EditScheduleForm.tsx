@@ -40,6 +40,8 @@ export default function EditScheduleForm({ scheduleId }: EditScheduleFormProps) 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [attemptedAttendanceSubmit, setAttemptedAttendanceSubmit] = useState(false);
   
   const [formData, setFormData] = useState({
     staff_id: "",
@@ -148,6 +150,12 @@ useEffect(() => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAttemptedSubmit(true);
+    
+    if (!formData.planned_start_time || !formData.planned_end_time || !formData.break_minutes || !formData.schedule_status) {
+      alert("Please Fill all the required fields");
+      return;
+    }
     
     try {
       setSaving(true);
@@ -191,6 +199,11 @@ useEffect(() => {
   };
 
   const handleAttendanceUpdate = async () => {
+    setAttemptedAttendanceSubmit(true);
+    if (!attendanceData.attendance_status) {
+      alert("Please Fill all the required fields");
+      return;
+    }
     try {
       setSaving(true);
       setError(null);
@@ -331,8 +344,8 @@ useEffect(() => {
               {/* Time Fields */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="planned_start_time" className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Time *
+                  <label htmlFor="planned_start_time" className={`block text-sm font-bold uppercase tracking-wider mb-1 ${attemptedSubmit && !formData.planned_start_time ? "text-red-500" : "text-gray-500"}`}>
+                    Start Time <span className="text-[10px] font-normal opacity-70">(required)</span>
                   </label>
                   <input
                     type="time"
@@ -340,13 +353,12 @@ useEffect(() => {
                     name="planned_start_time"
                     value={formData.planned_start_time}
                     onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    className={`w-full px-3 py-2 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.planned_start_time ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                   />
                 </div>
                 <div>
-                  <label htmlFor="planned_end_time" className="block text-sm font-medium text-gray-700 mb-1">
-                    End Time *
+                  <label htmlFor="planned_end_time" className={`block text-sm font-bold uppercase tracking-wider mb-1 ${attemptedSubmit && !formData.planned_end_time ? "text-red-500" : "text-gray-500"}`}>
+                    End Time <span className="text-[10px] font-normal opacity-70">(required)</span>
                   </label>
                   <input
                     type="time"
@@ -354,16 +366,15 @@ useEffect(() => {
                     name="planned_end_time"
                     value={formData.planned_end_time}
                     onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    className={`w-full px-3 py-2 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.planned_end_time ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                   />
                 </div>
               </div>
 
               {/* Break Minutes */}
               <div>
-                <label htmlFor="break_minutes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Break Minutes *
+                <label htmlFor="break_minutes" className={`block text-sm font-bold uppercase tracking-wider mb-1 ${attemptedSubmit && !formData.break_minutes ? "text-red-500" : "text-gray-500"}`}>
+                  Break Minutes <span className="text-[10px] font-normal opacity-70">(required)</span>
                 </label>
                 <input
                   type="number"
@@ -374,8 +385,7 @@ useEffect(() => {
                   min="0"
                   max="180"
                   step="15"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  className={`w-full px-3 py-2 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.break_minutes ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                 />
               </div>
 
@@ -399,16 +409,15 @@ useEffect(() => {
 
               {/* Schedule Status */}
               <div>
-                <label htmlFor="schedule_status" className="block text-sm font-medium text-gray-700 mb-1">
-                  Schedule Status *
+                <label htmlFor="schedule_status" className={`block text-sm font-bold uppercase tracking-wider mb-1 ${attemptedSubmit && !formData.schedule_status ? "text-red-500" : "text-gray-500"}`}>
+                  Schedule Status <span className="text-[10px] font-normal opacity-70">(required)</span>
                 </label>
                 <select
                   id="schedule_status"
                   name="schedule_status"
                   value={formData.schedule_status}
                   onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  className={`w-full px-3 py-2 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.schedule_status ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                 >
                   <option value="scheduled">Scheduled</option>
                   <option value="cancelled">Cancelled</option>
@@ -446,11 +455,11 @@ useEffect(() => {
                 <h3 className="font-medium text-gray-700 mb-2">Current Attendance</h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-gray-500">Check In:</span>
+                    <span className="text-gray-500">Duty In:</span>
                     <p className="font-medium text-black">{formatTimeDisplay(attendanceData.actual_check_in)}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Check Out:</span>
+                    <span className="text-gray-500">Duty Out:</span>
                     <p className="font-medium text-black">{formatTimeDisplay(attendanceData.actual_check_out)}</p>
                   </div>
                   <div>
@@ -470,12 +479,12 @@ useEffect(() => {
                     <p className="font-medium text-black">{attendanceData.overtime_minutes} min</p>
                   </div>
                    <div>
-                    <span className="text-gray-500">Check In Time:</span>
-                    <p className="font-medium text-black">{attendanceData.actual_check_in} min</p>
+                    <span className="text-gray-500">Duty In Time:</span>
+                    <p className="font-medium text-black">{attendanceData.actual_check_in || "N/A"}</p>
                   </div>
                    <div>
-                    <span className="text-gray-500">Check Out Time:</span>
-                    <p className="font-medium text-black">{attendanceData.actual_check_out} min</p>
+                    <span className="text-gray-500">Duty Out Time:</span>
+                    <p className="font-medium text-black">{attendanceData.actual_check_out || "N/A"}</p>
                   </div>
                 </div>
               </div>
@@ -487,12 +496,14 @@ useEffect(() => {
                  
                   
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Attendance Status</label>
+                    <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${attemptedAttendanceSubmit && !attendanceData.attendance_status ? "text-red-500" : "text-gray-500"}`}>
+                      Attendance Status <span className="font-normal opacity-70">(required)</span>
+                    </label>
                     <select
                       name="attendance_status"
                       value={attendanceData.attendance_status}
                       onChange={handleAttendanceChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-black"
+                      className={`w-full px-3 py-2 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedAttendanceSubmit && !attendanceData.attendance_status ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                     >
                       <option value="">Select Status</option>
                       <option value="present">Present</option>

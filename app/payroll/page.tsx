@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 interface Payroll {
     payroll_id: number;
     staff_name: string;
+    role?: string;
     period_start: string;
     period_end: string;
     gross_pay: number;
@@ -23,7 +24,8 @@ export default function PayrollPage() {
     const [payrolls, setPayrolls] = useState<Payroll[]>([]);
     const [periodStart, setPeriodStart] = useState("");
     const [periodEnd, setPeriodEnd] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [loadingType, setLoadingType] = useState<"staff" | "management" | null>(null);
+    const loading = loadingType !== null;
     const [roles, setRoles] = useState<Role[]>([]);
     const { user } = useAuthStore();
     const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
@@ -60,21 +62,36 @@ export default function PayrollPage() {
         fetchRoles();
     }, []);
 
-    const generatePayroll = async () => {
-        if (!periodStart || !periodEnd) {
+    const generatePayroll = async (isFixed: boolean = false) => {
+        let start = periodStart;
+        let end = periodEnd;
+
+        // If it's fixed payroll and no dates selected, default to current month
+        if (isFixed && (!start || !end)) {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            
+            // Format as YYYY-MM-DD for the API
+            start = firstDay.toISOString().split("T")[0];
+            end = lastDay.toISOString().split("T")[0];
+        }
+
+        if (!start || !end) {
             alert("Select period first");
             return;
         }
 
-        setLoading(true);
+        setLoadingType(isFixed ? "management" : "staff");
 
         try {
             const response = await fetch("/api/payroll", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    period_start: periodStart,
-                    period_end: periodEnd,
+                    period_start: start,
+                    period_end: end,
+                    is_fixed: isFixed
                 }),
             });
 
@@ -90,7 +107,7 @@ export default function PayrollPage() {
             console.error("Generate payroll error:", error);
             alert("Something went wrong");
         } finally {
-            setLoading(false);
+            setLoadingType(null);
         }
     };
 
@@ -170,13 +187,24 @@ export default function PayrollPage() {
                                 className="w-full px-3 py-2 border border-gray-300 bg-white rounded text-sm"
                             />
                         </div>
-                        {isManager && <button
-                            onClick={generatePayroll}
-                            disabled={loading}
-                            className="w-full px-4 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            {loading ? "Generating..." : "Generate Payroll"}
-                        </button>}
+                        {isManager && (
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <button
+                                    onClick={() => generatePayroll(false)}
+                                    disabled={loading}
+                                    className="flex-1 px-4 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {loadingType === "staff" ? "Generating Staff..." : "Generate Staff Payroll"}
+                                </button>
+                                <button
+                                    onClick={() => generatePayroll(true)}
+                                    disabled={loading}
+                                    className="flex-1 px-4 py-2 rounded bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:opacity-50 whitespace-nowrap"
+                                >
+                                    {loadingType === "management" ? "Generating Management..." : "Generate Management Payroll"}
+                                </button>
+                            </div>
+                        )}
 
                     </div>
                 </div>
@@ -207,7 +235,10 @@ export default function PayrollPage() {
 
                                         <td className="px-6 py-4">
                                             <div className="font-semibold">{p.staff_name}</div>
-                                            <div className="text-xs text-gray-500">
+                                            <div className="text-xs text-gray-600 font-medium">
+                                                {p.role || "Unknown Role"}
+                                            </div>
+                                            <div className="text-[10px] text-gray-400">
                                                 ID: {p.payroll_id}
                                             </div>
                                         </td>

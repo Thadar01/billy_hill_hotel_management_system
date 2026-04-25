@@ -188,9 +188,9 @@ export default function BookingPage() {
   }, [selectedServices]);
 
   const maxPointsByAmount = useMemo(() => {
-    // Total subtotal / 1000 = max points needed to cover everything
-    return Math.floor((roomSubtotal + serviceSubtotal) / 1000);
-  }, [roomSubtotal, serviceSubtotal]);
+    // service subtotal / 1000 = max points needed to cover premium services only
+    return Math.floor(serviceSubtotal / 1000);
+  }, [serviceSubtotal]);
 
   const maxPointsUsable = useMemo(() => {
     const customerPoints = Number(latestPoints || 0);
@@ -216,6 +216,11 @@ export default function BookingPage() {
   const addRoom = (roomID: string) => {
     if (!roomID) return;
     if (selectedRooms.some((room) => room.roomID === roomID)) return;
+    
+    if (selectedRooms.length >= 3) {
+      alert("You can only select up to 3 rooms per booking.");
+      return;
+    }
 
     setSelectedRooms((prev) => [
       ...prev,
@@ -440,6 +445,11 @@ export default function BookingPage() {
               <h2 className="text-xl font-semibold mb-4">Selected Rooms</h2>
 
               <div className="mb-4">
+                {selectedRooms.length >= 3 ? (
+                  <div className="p-3 bg-yellow-50 text-yellow-800 rounded-lg text-sm mb-2">
+                    You have reached the maximum limit of 3 rooms per booking.
+                  </div>
+                ) : null}
                 <select
                   onChange={(e) => {
                     addRoom(e.target.value);
@@ -447,15 +457,17 @@ export default function BookingPage() {
                   }}
                   className="w-full border rounded-lg px-3 py-2"
                   defaultValue=""
+                  disabled={selectedRooms.length >= 3}
                 >
                   <option value="" disabled>
-                    Add a room
+                    {selectedRooms.length >= 3 ? "Maximum rooms selected" : "Add a room"}
                   </option>
                   {rooms
                     .filter(
                       (room) =>
                         room.roomStatus !== "maintenance" &&
-                        room.roomStatus !== "occupied"
+                        room.roomStatus !== "occupied" &&
+                        !selectedRooms.some((selected) => selected.roomID === room.roomID)
                     )
                     .map((room) => (
                       <option key={room.roomID} value={room.roomID}>

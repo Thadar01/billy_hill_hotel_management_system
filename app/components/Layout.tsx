@@ -127,7 +127,7 @@ export default function Layout({ children }: LayoutProps) {
         <div>
           <h2 className="text-xl font-black text-black tracking-tight mb-1 mt-2">{user.staff_name}</h2>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            {/* <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> */}
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
               {roleName} Portal
             </span>
@@ -171,7 +171,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="fixed inset-0 z-50 flex">
           {/* Overlay */}
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/60 transition-opacity"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
@@ -201,10 +201,8 @@ export default function Layout({ children }: LayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-block text-xs font-bold text-gray-400 uppercase tracking-widest mr-3">
-              Hotel Admin
-            </span>
-            <div className="flex items-center gap-1.5 border-l border-gray-200 pl-3">
+
+            <div className="flex items-center pl-3">
               <Link
                 href="/staff/settings"
                 className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"

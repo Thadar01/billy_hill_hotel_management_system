@@ -25,10 +25,16 @@ export default function UserHomePage() {
   const [featuredRooms, setFeaturedRooms] = useState<Room[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
 
+  const today = new Date().toISOString().split("T")[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+
+  const [checkIn, setCheckIn] = useState(today);
+  const [checkOut, setCheckOut] = useState(tomorrow);
+
   useEffect(() => {
     const loadRooms = async () => {
       try {
-        const res = await fetch("/api/rooms", { cache: "no-store" });
+        const res = await fetch("/api/rooms?admin=true", { cache: "no-store" });
         const data = await res.json();
 
         const rooms = Array.isArray(data) ? data : [];
@@ -63,13 +69,13 @@ export default function UserHomePage() {
 
             <div className="mt-8 flex flex-wrap gap-4">
               <button
-                onClick={() => router.push("/rooms")}
+                onClick={() => router.push("/user-rooms")}
                 className="rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white hover:bg-blue-700"
               >
                 Explore Rooms
               </button>
               <button
-                onClick={() => router.push("/premium-services")}
+                onClick={() => router.push("/user-services")}
                 className="rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold text-white hover:bg-white/20"
               >
                 View Services
@@ -89,6 +95,9 @@ export default function UserHomePage() {
                   <label className="mb-1 block text-sm font-medium">Check In</label>
                   <input
                     type="date"
+                    min={today}
+                    value={checkIn}
+                    onChange={(e) => setCheckIn(e.target.value)}
                     className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                   />
                 </div>
@@ -97,6 +106,9 @@ export default function UserHomePage() {
                   <label className="mb-1 block text-sm font-medium">Check Out</label>
                   <input
                     type="date"
+                    min={checkIn || today}
+                    value={checkOut}
+                    onChange={(e) => setCheckOut(e.target.value)}
                     className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                   />
                 </div>
@@ -123,7 +135,7 @@ export default function UserHomePage() {
                 </div>
 
                 <button
-                  onClick={() => router.push("/rooms")}
+                  onClick={() => router.push(`/user-rooms?checkIn=${checkIn}&checkOut=${checkOut}`)}
                   className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700"
                 >
                   Search Rooms
@@ -177,7 +189,7 @@ export default function UserHomePage() {
             </div>
 
             <button
-              onClick={() => router.push("/rooms")}
+              onClick={() => router.push("/user-rooms")}
               className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-black hover:bg-gray-50"
             >
               View All Rooms
@@ -222,10 +234,10 @@ export default function UserHomePage() {
 
                     <div className="mt-4 flex items-center justify-between">
                       <span className="text-lg font-bold text-blue-600">
-                        ${room.price}/night
+                        MMK {room.price.toLocaleString()}/night
                       </span>
                       <button
-                        onClick={() => router.push("/rooms")}
+                        onClick={() => router.push("/user-rooms")}
                         className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
                       >
                         Book
@@ -246,7 +258,7 @@ export default function UserHomePage() {
             Book now and enjoy comfort, convenience, and memorable hospitality.
           </p>
           <button
-            onClick={() => router.push("/rooms")}
+            onClick={() => router.push("/user-rooms")}
             className="mt-6 rounded-xl bg-white px-6 py-3 font-semibold text-blue-600 hover:bg-gray-100"
           >
             Reserve a Room

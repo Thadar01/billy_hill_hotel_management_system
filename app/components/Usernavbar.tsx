@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCustomerAuthStore } from "@/store/useCustomerAuthStore";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 export default function UserNavbar() {
   const pathname = usePathname();
@@ -44,7 +44,7 @@ export default function UserNavbar() {
           Billy Hill Hotel
         </Link>
 
-        {/* DESKTOP NAV */}
+        {/* DESKTOP NAV - hidden on mobile, visible on desktop */}
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/user-home" className={navClass("/user-home")}>
             Home
@@ -75,7 +75,7 @@ export default function UserNavbar() {
           </Link>
         </nav>
 
-        {/* DESKTOP ACTIONS */}
+        {/* DESKTOP ACTIONS - hidden on mobile, visible on desktop */}
         <div className="hidden md:flex items-center gap-3">
           <button
             onClick={() => router.push("/")}
@@ -119,21 +119,19 @@ export default function UserNavbar() {
           </button>
         </div>
 
-        {/* MOBILE BUTTON */}
+        {/* MOBILE BUTTON - hidden on desktop, visible on mobile */}
         <button
-          className="md:hidden p-2 z-50 text-black"
+          className="mobile-only-toggle p-2 z-50 text-black hover:bg-gray-100 rounded-lg transition-colors"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
-          <Menu size={28} />
+          {mobileOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
 
-      {/* MOBILE MENU */}
-      {/* MOBILE MENU */}
+      {/* MOBILE MENU - only visible on mobile when open */}
       {mobileOpen && (
-        <div className="md:hidden fixed top-16 left-0 w-full bg-white text-black border-t shadow-lg px-4 py-5 flex flex-col gap-4 z-50">
-
+        <div className="mobile-only-toggle md:hidden fixed top-16 left-0 w-full bg-white text-black border-t shadow-lg px-4 py-5 flex flex-col gap-4 z-50">
           <Link onClick={closeMenu} href="/user-home" className={navClass("/user-home")}>
             Home
           </Link>
@@ -172,7 +170,7 @@ export default function UserNavbar() {
                 router.push("/");
                 closeMenu();
               }}
-              className="rounded-lg px-4 py-2 text-sm text-black border-2 border-black"
+              className="rounded-lg px-4 py-2 text-sm text-black border border-gray-300"
             >
               Back
             </button>
@@ -202,7 +200,7 @@ export default function UserNavbar() {
                   router.push("/user-login");
                   closeMenu();
                 }}
-                className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white"
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white"
               >
                 Sign In
               </button>

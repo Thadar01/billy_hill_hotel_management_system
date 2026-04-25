@@ -31,6 +31,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [formData, setFormData] = useState({
     roomNumber: initialData?.roomNumber || "",
@@ -74,6 +75,16 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAttemptedSubmit(true);
+    
+    // Basic validation
+    const requiredFields = ["roomNumber", "roomType", "price", "floor", "roomSize", "bed", "person", "bathroom", "description"];
+    const isMissing = requiredFields.some(field => !formData[field as keyof typeof formData]);
+    if (isMissing) {
+      alert("Please Fill all the required fields");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -145,31 +156,29 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Room Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Room Number *
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.roomNumber ? "text-red-500" : "text-gray-500 text-sm"}`}>
+              Room Number <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <input
               type="text"
               name="roomNumber"
-              required
               value={formData.roomNumber}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.roomNumber ? "border-red-500 bg-red-50" : "border-gray-200"}`}
               placeholder="e.g., 101"
             />
           </div>
 
           {/* Room Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Room Type *
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.roomType ? "text-red-500" : "text-gray-500 text-sm"}`}>
+              Room Type <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <select
               name="roomType"
-              required
               value={formData.roomType}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.roomType ? "border-red-500 bg-red-50" : "border-gray-200"}`}
             >
               <option value="">Select type</option>
               <option value="Standard">Standard</option>
@@ -181,103 +190,97 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
 
           {/* Price */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price per Night (MMK) *
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.price ? "text-red-500" : "text-gray-500 text-sm"}`}>
+              Price per Night (MMK) <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <input
               type="number"
               name="price"
-              required
               min="0"
               step="1"
               value={formData.price}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.price ? "border-red-500 bg-red-50" : "border-gray-200"}`}
               placeholder="0"
             />
           </div>
 
           {/* Floor */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Floor *
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.floor ? "text-red-500" : "text-gray-500 text-sm"}`}>
+              Floor <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <input
               type="number"
               name="floor"
-              required
               min="1"
               value={formData.floor}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.floor ? "border-red-500 bg-red-50" : "border-gray-200"}`}
               placeholder="1"
             />
           </div>
 
           {/* Room Size */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Room Size (m²) *
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.roomSize ? "text-red-500" : "text-gray-500 text-sm"}`}>
+              Room Size (m²) <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <input
               type="number"
               name="roomSize"
-              required
               min="1"
               value={formData.roomSize}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.roomSize ? "border-red-500 bg-red-50" : "border-gray-200"}`}
               placeholder="25"
             />
           </div>
 
           {/* Bed */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Number of Beds *
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.bed ? "text-red-500" : "text-gray-500 text-sm"}`}>
+              Number of Beds <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <input
               type="number"
               name="bed"
-              required
               min="1"
               value={formData.bed}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.bed ? "border-red-500 bg-red-50" : "border-gray-200"}`}
               placeholder="1"
             />
           </div>
 
           {/* Person */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Maximum Guests *
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.person ? "text-red-500" : "text-gray-500 text-sm"}`}>
+              Maximum Guests <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <input
               type="number"
               name="person"
-              required
               min="1"
               value={formData.person}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.person ? "border-red-500 bg-red-50" : "border-gray-200"}`}
               placeholder="2"
             />
           </div>
 
           {/* Bathroom */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Number of Bathrooms *
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.bathroom ? "text-red-500" : "text-gray-500 text-sm"}`}>
+              Number of Bathrooms <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <input
               type="number"
               name="bathroom"
-              required
               min="1"
               value={formData.bathroom}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.bathroom ? "border-red-500 bg-red-50" : "border-gray-200"}`}
               placeholder="1"
             />
           </div>
@@ -333,16 +336,15 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
 
         {/* Description */}
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Description *
+          <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.description ? "text-red-500" : "text-gray-500 text-sm"}`}>
+            Description <span className="text-[10px] font-normal opacity-70">(required)</span>
           </label>
           <textarea
             name="description"
-            required
             rows={4}
             value={formData.description}
             onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.description ? "border-red-500 bg-red-50" : "border-gray-200"}`}
             placeholder="Describe the room, amenities, etc."
           />
         </div>
@@ -396,19 +398,18 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
           )}
         </div>
 
-        {/* Submit Button */}
-        <div className="mt-6 flex gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-100">
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg transition-all"
           >
             {loading ? "Saving..." : initialData ? "Update Room" : "Create Room"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200"
+            className="flex-1 px-8 py-4 bg-gray-100 text-gray-700 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-gray-200 transition-all"
           >
             Cancel
           </button>

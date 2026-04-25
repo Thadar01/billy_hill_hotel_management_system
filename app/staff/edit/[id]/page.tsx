@@ -28,6 +28,26 @@ export default function EditStaffPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
+  const requiredFields = ["staff_name", "staff_gmail", "staff_phone", "role_id", "salary_rate", "overtime_fees"];
+
+  const isFieldInvalid = (fieldName: string) => {
+    if (!staff) return false;
+    const value = staff[fieldName as keyof Staff];
+    
+    if (fieldName === "staff_gmail") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const strValue = value?.toString() || "";
+      // Show error if user typed something invalid, OR if they tried to submit an empty/invalid email
+      return (strValue.length > 0 && !emailRegex.test(strValue)) || (attemptedSubmit && !emailRegex.test(strValue));
+    }
+
+    if (!attemptedSubmit) return false;
+    if (!value) return true;
+    
+    return false;
+  };
 
   // Load staff from query string
   useEffect(() => {
@@ -71,11 +91,30 @@ export default function EditStaffPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setStaff({ ...staff, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let finalValue: any = value;
+    
+    if (["staff_phone", "salary_rate", "overtime_fees"].includes(name)) {
+      finalValue = value.replace(/\D/g, '');
+    }
+    
+    setStaff({ ...staff, [name]: finalValue });
   };
 
   // Save changes
   const handleSave = async () => {
+    setAttemptedSubmit(true);
+    
+    const isAnyInvalid = requiredFields.some(field => isFieldInvalid(field));
+    if (isAnyInvalid) {
+      if (isFieldInvalid("staff_gmail") && staff.staff_gmail) {
+        alert("Invalid email format (e.g. example@gmail.com)");
+      } else {
+        alert("Please Fill all the required fields correctly");
+      }
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`/api/staff/${staffId}`, {
@@ -98,8 +137,8 @@ export default function EditStaffPage() {
 
   return (
     <Layout>
-      <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow text-black">
-        <div className="flex items-center gap-2 mb-6">
+      <div className="max-w-xl mx-auto p-8 bg-white rounded-2xl shadow-xl text-black border border-gray-100">
+        <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.push("/staff")}
             className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
@@ -107,50 +146,58 @@ export default function EditStaffPage() {
           >
             &#8592;
           </button>
-          <h1 className="text-3xl font-semibold text-black">Edit Staff</h1>
+          <h1 className="text-3xl font-bold text-black tracking-tight">Edit Staff Profile</h1>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div>
-            <label className="block font-medium mb-1 text-black">Name</label>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-1.5">
+            <label className={`text-sm font-bold uppercase tracking-wider ${isFieldInvalid("staff_name") ? "text-red-500" : "text-gray-500"}`}>
+              Full Name <span className="text-[10px] font-normal opacity-70">(required)</span>
+            </label>
             <input
               type="text"
               name="staff_name"
               value={staff.staff_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded text-black"
+              className={`w-full px-4 py-3 border rounded-xl text-black transition-all outline-none focus:ring-2 focus:ring-blue-500/20 ${isFieldInvalid("staff_name") ? "border-red-500 bg-red-50" : "border-gray-200"}`}
             />
           </div>
 
-          <div>
-            <label className="block font-medium mb-1 text-black">Email</label>
+          <div className="flex flex-col gap-1.5">
+            <label className={`text-sm font-bold uppercase tracking-wider ${isFieldInvalid("staff_gmail") ? "text-red-500" : "text-gray-500"}`}>
+              Email Address <span className="text-[10px] font-normal opacity-70">(required)</span>
+            </label>
             <input
               type="email"
               name="staff_gmail"
               value={staff.staff_gmail}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded text-black"
+              className={`w-full px-4 py-3 border rounded-xl text-black transition-all outline-none focus:ring-2 focus:ring-blue-500/20 ${isFieldInvalid("staff_gmail") ? "border-red-500 bg-red-50" : "border-gray-200"}`}
             />
           </div>
 
-          <div>
-            <label className="block font-medium mb-1 text-black">Phone</label>
+          <div className="flex flex-col gap-1.5">
+            <label className={`text-sm font-bold uppercase tracking-wider ${isFieldInvalid("staff_phone") ? "text-red-500" : "text-gray-500"}`}>
+              Phone Number <span className="text-[10px] font-normal opacity-70">(required - numbers only)</span>
+            </label>
             <input
               type="text"
               name="staff_phone"
               value={staff.staff_phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded text-black"
+              className={`w-full px-4 py-3 border rounded-xl text-black transition-all outline-none focus:ring-2 focus:ring-blue-500/20 ${isFieldInvalid("staff_phone") ? "border-red-500 bg-red-50" : "border-gray-200"}`}
             />
           </div>
 
-          <div>
-            <label className="block font-medium mb-1 text-black">Role</label>
+          <div className="flex flex-col gap-1.5">
+            <label className={`text-sm font-bold uppercase tracking-wider ${isFieldInvalid("role_id") ? "text-red-500" : "text-gray-500"}`}>
+              Assigned Role <span className="text-[10px] font-normal opacity-70">(required)</span>
+            </label>
             <select
               name="role_id"
               value={staff.role_id}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded text-black"
+              className={`w-full px-4 py-3 border rounded-xl text-black transition-all outline-none focus:ring-2 focus:ring-blue-500/20 ${isFieldInvalid("role_id") ? "border-red-500 bg-red-50" : "border-gray-200"}`}
             >
               {roles.map((role) => (
                 <option key={role.role_id} value={role.role_id}>
@@ -160,41 +207,47 @@ export default function EditStaffPage() {
             </select>
           </div>
 
-          <div>
-            <label className="block font-medium mb-1 text-black">Salary</label>
-            <input
-              type="number"
-              name="salary_rate"
-              value={staff.salary_rate}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded text-black"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-1.5">
+              <label className={`text-sm font-bold uppercase tracking-wider ${isFieldInvalid("salary_rate") ? "text-red-500" : "text-gray-500"}`}>
+                Salary (MMK) <span className="text-[10px] font-normal opacity-70">(required - numbers only)</span>
+              </label>
+              <input
+                type="text"
+                name="salary_rate"
+                value={staff.salary_rate}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border rounded-xl text-black transition-all outline-none focus:ring-2 focus:ring-blue-500/20 ${isFieldInvalid("salary_rate") ? "border-red-500 bg-red-50" : "border-gray-200"}`}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className={`text-sm font-bold uppercase tracking-wider ${isFieldInvalid("overtime_fees") ? "text-red-500" : "text-gray-500"}`}>
+                Overtime (MMK) <span className="text-[10px] font-normal opacity-70">(required - numbers only)</span>
+              </label>
+              <input
+                type="text"
+                name="overtime_fees"
+                value={staff.overtime_fees}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border rounded-xl text-black transition-all outline-none focus:ring-2 focus:ring-blue-500/20 ${isFieldInvalid("overtime_fees") ? "border-red-500 bg-red-50" : "border-gray-200"}`}
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block font-medium mb-1 text-black">Overtime</label>
-            <input
-              type="number"
-              name="overtime_fees"
-              value={staff.overtime_fees}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded text-black"
-            />
-          </div>
-
-          <div className="flex gap-2 mt-4">
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 px-4 py-4 rounded-xl bg-blue-600 text-white font-bold uppercase text-xs tracking-widest hover:bg-blue-700 disabled:opacity-50 transition-all shadow-lg"
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? "Processing..." : "Update Profile"}
             </button>
             <button
               onClick={() => router.push("/staff")}
-              className="flex-1 px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-black"
+              className="flex-1 px-4 py-4 rounded-xl bg-gray-100 text-gray-700 font-bold uppercase text-xs tracking-widest hover:bg-gray-200 transition-all"
             >
-              Cancel
+              Discard Changes
             </button>
           </div>
         </div>

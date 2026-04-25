@@ -81,22 +81,30 @@ export async function POST(req: NextRequest) {
 
     await connection.beginTransaction();
 
-    const insertIds: number[] = [];
+    const resultIds: number[] = [];
     for (const f of feedbacks) {
-      const [result] = await connection.query<ResultSetHeader>(
-        `
-        INSERT INTO feedbacks (customerID, bookingID, rating, category, comment)
-        VALUES (?, ?, ?, ?, ?)
-        `,
-        [
-          f.customerID || null,
-          f.bookingID || null,
-          f.rating,
-          f.category,
-          f.comment || null,
-        ]
+      // Check if feedback already exists for this booking + category
+      const [existing] = await connection.query<RowDataPacket[]>(
+        `SELECT feedbackId FROM feedbacks WHERE customerID = ? AND bookingID = ? AND category = ?`,
+        [f.customerID || null, f.bookingID || null, f.category]
       );
-      insertIds.push(result.insertId);
+
+      if (existing.length > 0) {
+        // Update existing feedback
+        await connection.query<ResultSetHeader>(
+          `UPDATE feedbacks SET rating = ?, comment = ? WHERE feedbackId = ?`,
+          [f.rating, f.comment || null, existing[0].feedbackId]
+        );
+        resultIds.push(existing[0].feedbackId);
+      } else {
+        // Insert new feedback
+        const [result] = await connection.query<ResultSetHeader>(
+          `INSERT INTO feedbacks (customerID, bookingID, rating, category, comment)
+           VALUES (?, ?, ?, ?, ?)`,
+          [f.customerID || null, f.bookingID || null, f.rating, f.category, f.comment || null]
+        );
+        resultIds.push(result.insertId);
+      }
     }
 
     await connection.commit();
@@ -104,7 +112,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         message: "Feedback submitted successfully",
-        feedbackIds: insertIds,
+        feedbackIds: resultIds,
       },
       { status: 201 }
     );

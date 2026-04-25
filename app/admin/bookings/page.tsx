@@ -307,7 +307,9 @@ export default function AdminBookingsPage() {
                   <th className="text-left px-4 py-3 text-blue-600">Points</th>
                   <th className="text-left px-4 py-3">Balance</th>
                   <th className="text-left px-4 py-3 text-red-600">Refund Status</th>
-                  <th className="text-left px-4 py-3">Action</th>
+                  <th className="sticky right-0 bg-gray-50 z-10 text-left px-4 py-3 min-w-[160px] shadow-[-2px_0_5px_rgba(0,0,0,0.05)]">
+                    Action
+                  </th>
                 </tr>
               </thead>
 
@@ -365,13 +367,13 @@ export default function AdminBookingsPage() {
                         <span className="text-gray-400 text-xs italic">No Refunds</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-2">
+                    <td className="sticky right-0 bg-white z-10 px-4 py-3 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]">
+                      <div className="flex flex-nowrap items-center gap-2">
                         {booking.bookingStatus === "confirmed" && (
                           <button
                             onClick={() => handleCheckIn(booking.bookingID)}
                             disabled={processingID === booking.bookingID}
-                            className="bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                            className="bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-50 whitespace-nowrap text-xs font-medium"
                           >
                             {processingID === booking.bookingID ? "Processing..." : "Check In"}
                           </button>
@@ -381,7 +383,7 @@ export default function AdminBookingsPage() {
                           <button
                             onClick={() => handleCheckOut(booking.bookingID)}
                             disabled={processingID === booking.bookingID}
-                            className="bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                            className="bg-blue-600 text-white px-3 py-2 rounded-lg disabled:opacity-50 whitespace-nowrap text-xs font-medium"
                           >
                             {processingID === booking.bookingID ? "Processing..." : "Check Out"}
                           </button>
@@ -389,7 +391,7 @@ export default function AdminBookingsPage() {
 
                         <Link
                           href={`/admin/bookings/${booking.bookingID}`}
-                          className="bg-black text-white px-3 py-2 rounded-lg inline-block"
+                          className="bg-black text-white px-4 py-2 rounded-lg inline-block whitespace-nowrap text-xs font-medium"
                         >
                           View
                         </Link>

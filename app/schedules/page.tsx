@@ -55,6 +55,7 @@ export default function SchedulesPage() {
     status: string;
   } | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -146,6 +147,10 @@ export default function SchedulesPage() {
 
   const weekSchedule = Array.from(staffMap.values()).sort((a, b) => a.staff_name.localeCompare(b.staff_name));
 
+  const filteredWeekSchedule = weekSchedule.filter(s =>
+    s.staff_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const shiftTypes = ["all", "morning", "evening", "night"];
 
 
@@ -168,7 +173,7 @@ export default function SchedulesPage() {
     if (!shift) return null;
 
     if (shift.actual_check_in && !shift.actual_check_out) {
-      return <span className="text-xs text-green-600 block">✓ Checked in</span>;
+      return <span className="text-xs text-green-600 block">✓ Duty In</span>;
     }
     if (shift.actual_check_in && shift.actual_check_out) {
       return <span className="text-xs text-blue-600 block">✓ Completed</span>;
@@ -325,21 +330,32 @@ export default function SchedulesPage() {
           </div>
         </div>
 
-        {/* Global Controls & Filters */}
-        <div className="flex flex-wrap gap-2 items-center bg-gray-50 p-4 rounded border border-gray-200">
-          <span className="text-sm font-semibold text-gray-700">Filter by Shift:</span>
-          {shiftTypes.map((shift) => (
-            <button
-              key={shift}
-              onClick={() => setFilterShift(shift)}
-              className={`px-4 py-1.5 rounded text-xs font-medium transition-all ${filterShift === shift
-                ? "bg-blue-600 text-white"
-                : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
-                }`}
-            >
-              {shift.charAt(0).toUpperCase() + shift.slice(1)}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-gray-50 p-4 rounded border border-gray-200">
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm font-semibold text-gray-700">Filter by Shift:</span>
+            {shiftTypes.map((shift) => (
+              <button
+                key={shift}
+                onClick={() => setFilterShift(shift)}
+                className={`px-4 py-1.5 rounded text-xs font-medium transition-all ${filterShift === shift
+                  ? "bg-blue-600 text-white"
+                  : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
+              >
+                {shift.charAt(0).toUpperCase() + shift.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative flex-1 max-w-xs">
+            <input
+              type="text"
+              placeholder="Search with staff name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-full px-4 py-2 border border-gray-300 rounded-lg leading-5 bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 sm:text-sm transition-all"
+            />
+          </div>
         </div>
 
         {/* Schedule Matrix */}
@@ -359,14 +375,16 @@ export default function SchedulesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {weekSchedule.length === 0 ? (
+                {filteredWeekSchedule.length === 0 ? (
                   <tr>
                     <td colSpan={weekDates.length + 2} className="px-6 py-20 text-center">
-                      <p className="text-gray-300 font-black uppercase tracking-widest text-xs">No active rosters in this temporal window</p>
+                      <p className="text-gray-300 font-black uppercase tracking-widest text-xs">
+                        {searchQuery ? `No schedules found for "${searchQuery}"` : "No active rosters in this temporal window"}
+                      </p>
                     </td>
                   </tr>
                 ) : (
-                  weekSchedule.map((staff) => {
+                  filteredWeekSchedule.map((staff) => {
                     const hasMatchingShift = Object.values(staff.shifts).some(
                       (shift) => shift && (filterShift === "all" || (shift.shift_type || '') === filterShift)
                     );
@@ -407,7 +425,7 @@ export default function SchedulesPage() {
                                     </span>
                                     {shift.actual_check_in && (
                                       <span className="inline-block w-fit px-1 rounded text-[9px] font-bold uppercase bg-green-100 text-green-600">
-                                        {shift.actual_check_out ? 'Completed' : 'Checked In'}
+                                        {shift.actual_check_out ? 'Completed' : 'Duty In'}
                                       </span>
                                     )}
                                   </div>
@@ -562,7 +580,7 @@ export default function SchedulesPage() {
                                       onClick={() => handleAttendanceAction(shift.id!, "checkin")}
                                       className="px-4 py-2 bg-green-600 text-white rounded text-[10px] font-bold uppercase transition-all hover:bg-green-700"
                                     >
-                                      Check In
+                                      Duty In
                                     </button>
                                   )}
                                   {shift.actual_check_in && !shift.actual_check_out && isStaff && (
@@ -570,7 +588,7 @@ export default function SchedulesPage() {
                                       onClick={() => handleAttendanceAction(shift.id!, "checkout")}
                                       className="px-4 py-2 bg-blue-600 text-white rounded text-[10px] font-bold uppercase transition-all hover:bg-orange-700"
                                     >
-                                      Check Out
+                                      Duty Out
                                     </button>
                                   )}
                                   {isManager && (

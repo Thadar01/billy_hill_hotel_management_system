@@ -14,6 +14,8 @@ import {
   Maximize,
   PawPrint,
   MapPin,
+  Cigarette,
+  Wind
 } from "lucide-react";
 import Layout from "@/app/components/Layout";
 
@@ -105,7 +107,16 @@ export default function RoomDetailPage() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-8 text-black">
-        <div className="overflow-hidden rounded-lg bg-white shadow-lg">
+        <div className="overflow-hidden rounded-lg bg-white shadow-lg relative">
+          <div className="p-4 lg:px-6 lg:pt-6 pb-0 flex items-center">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 w-fit"
+            >
+              <ArrowLeft size={20} />
+              Back to Rooms
+            </button>
+          </div>
           <div className="grid grid-cols-1 gap-4 p-6 lg:grid-cols-2">
             <div className="relative h-96 overflow-hidden rounded-lg bg-gray-200">
               {room.images && room.images.length > 0 ? (
@@ -149,13 +160,6 @@ export default function RoomDetailPage() {
             <div className="mb-4 flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <button
-                    onClick={() => router.back()}
-                    className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
-                    title="Back"
-                  >
-                    &#8592;
-                  </button>
                   <h1 className="text-3xl font-bold">Room {room.roomNumber}</h1>
                 </div>
                 <p className="text-lg text-gray-600">{room.roomType}</p>
@@ -261,14 +265,14 @@ export default function RoomDetailPage() {
               )}
               {room.isBalcony && (
                 <div className="rounded-lg bg-gray-50 p-4">
-                  <PawPrint className="mb-2 text-blue-600" size={24} />
+                  <Wind className="mb-2 text-blue-600" size={24} />
                   <p className="text-sm text-gray-600">Balcony</p>
                   <p className="font-semibold">Available</p>
                 </div>
               )}
               {room.isBalcony && (
                 <div className="rounded-lg bg-gray-50 p-4">
-                  <PawPrint className="mb-2 text-blue-600" size={24} />
+                  <Cigarette className="mb-2 text-blue-600" size={24} />
                   <p className="text-sm text-gray-600">Smoking</p>
                   <p className="font-semibold">Available</p>
                 </div>

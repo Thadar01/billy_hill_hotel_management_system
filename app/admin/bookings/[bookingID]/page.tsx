@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Layout from "@/app/components/Layout";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface Booking {
   bookingID: string;
@@ -97,7 +98,7 @@ interface BookingDetailResponse {
 }
 
 function formatMoney(value: number | string) {
-  return Number(value || 0).toFixed(2);
+  return Number(value || 0).toLocaleString();
 }
 
 function formatDateTime(value?: string | null, mounted?: boolean) {
@@ -115,6 +116,12 @@ export default function AdminBookingDetailPage() {
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [roles, setRoles] = useState<{ role_id: number; role: string }[]>([]);
+  const { user } = useAuthStore();
+
+  const roleName = roles.find((r) => r.role_id === user?.role_id)?.role ?? "Unknown";
+  const normalizedRole = roleName.toLowerCase().trim();
+  const isReceptionist = normalizedRole === "receptionist";
 
   // Refund States
   const [selectedPaymentID, setSelectedPaymentID] = useState<number | "">("");
@@ -128,6 +135,7 @@ export default function AdminBookingDetailPage() {
   const [refundReason, setRefundReason] = useState("");
   const [refundRef, setRefundRef] = useState("");
   const [refundNote, setRefundNote] = useState("");
+  const [attemptedRefundSubmit, setAttemptedRefundSubmit] = useState(false);
   const [submittingRefund, setSubmittingRefund] = useState(false);
   const [createError, setCreateError] = useState("");
 
@@ -136,7 +144,18 @@ export default function AdminBookingDetailPage() {
     if (bookingID) {
       fetchDetail();
     }
+    fetchRoles();
   }, [bookingID]);
+
+  const fetchRoles = async () => {
+    try {
+      const res = await fetch("/api/roles");
+      const data = await res.json();
+      setRoles(data.roles || []);
+    } catch (err) {
+      console.error("Failed to fetch roles", err);
+    }
+  };
 
   const fetchDetail = async () => {
     try {
@@ -174,9 +193,11 @@ export default function AdminBookingDetailPage() {
   };
 
   const handleCreateRefund = async () => {
+    setAttemptedRefundSubmit(true);
     try {
       if (!selectedPaymentID || !refundAmount || !refundMethod || !refundStatus) {
         setCreateError("Payment ID, Amount, Method, and Status are required");
+        alert("Please Fill all the required fields");
         return;
       }
       setSubmittingRefund(true);
@@ -314,15 +335,24 @@ export default function AdminBookingDetailPage() {
     <Layout>
       <div className="p-6 text-black space-y-6">
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Booking #{booking.bookingID}</h1>
-            <p className="text-gray-600 mt-1">
-              {booking.fullName} • {booking.email}
-            </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => window.history.back()}
+              className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
+              title="Back"
+            >
+              &#8592;
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold">Booking #{booking.bookingID}</h1>
+              <p className="text-gray-600 mt-1">
+                {booking.fullName} • {booking.email}
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3">
-            {booking.bookingStatus === "confirmed" && (
+            {isReceptionist && booking.bookingStatus === "confirmed" && (
               <button
                 onClick={handleCheckIn}
                 disabled={isProcessing}
@@ -332,7 +362,7 @@ export default function AdminBookingDetailPage() {
               </button>
             )}
 
-            {booking.bookingStatus === "checked_in" && (
+            {isReceptionist && booking.bookingStatus === "checked_in" && (
               <button
                 onClick={handleCheckOut}
                 disabled={isProcessing}
@@ -341,10 +371,6 @@ export default function AdminBookingDetailPage() {
                 {isProcessing ? "Processing..." : "Check Out"}
               </button>
             )}
-
-            <Link href="/admin/bookings" className="border border-black px-4 py-2 rounded-lg">
-              Back
-            </Link>
           </div>
         </div>
 
@@ -413,7 +439,7 @@ export default function AdminBookingDetailPage() {
                       {payments.map((payment) => (
                         <tr key={payment.paymentID} className="border-b">
                           <td className="py-2">{payment.paymentID}</td>
-                          <td className="py-2">${formatMoney(payment.amount)}</td>
+                          <td className="py-2">MMK {formatMoney(payment.amount)}</td>
                           <td className="py-2">{payment.paymentMethod}</td>
                           <td className="py-2">{payment.paymentType}</td>
                           <td className="py-2">{payment.paymentStatus}</td>
@@ -439,7 +465,7 @@ export default function AdminBookingDetailPage() {
                           <span className="text-gray-500">Refund ID:</span> {refund.refundID}
                         </p>
                         <p>
-                          <span className="text-gray-500">Amount:</span> ${formatMoney(refund.refundAmount)}
+                          <span className="text-gray-500">Amount:</span> MMK {formatMoney(refund.refundAmount)}
                         </p>
                         <p>
                           <span className="text-gray-500">Status:</span>{" "}
@@ -472,7 +498,7 @@ export default function AdminBookingDetailPage() {
                     <p>
                       Adults: {room.adults} | Children: {room.children} | Nights: {room.nights}
                     </p>
-                    <p>Line Total: ${formatMoney(room.lineTotal)}</p>
+                    <p>Line Total: MMK {formatMoney(room.lineTotal)}</p>
                   </div>
                 ))}
               </div>
@@ -490,7 +516,7 @@ export default function AdminBookingDetailPage() {
                       <p>Pricing: {service.pricingType}</p>
                       <p>Quantity: {service.quantity}</p>
                       <p>Person Count: {service.personCount ?? "-"}</p>
-                      <p>Line Total: ${formatMoney(service.lineTotal)}</p>
+                      <p>Line Total: MMK {formatMoney(service.lineTotal)}</p>
                     </div>
                   ))}
                 </div>
@@ -519,15 +545,15 @@ export default function AdminBookingDetailPage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span>Total Amount</span>
-                  <span>${formatMoney(booking.totalAmount)}</span>
+                  <span>MMK {formatMoney(booking.totalAmount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Paid Amount</span>
-                  <span>${formatMoney(booking.paidAmount)}</span>
+                  <span>MMK {formatMoney(booking.paidAmount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Refunded Amount</span>
-                  <span>${formatMoney(booking.refundedAmount)}</span>
+                  <span>MMK {formatMoney(booking.refundedAmount)}</span>
                 </div>
                 <div className="flex justify-between text-blue-600 font-medium">
                   <span>Points Used</span>
@@ -535,12 +561,12 @@ export default function AdminBookingDetailPage() {
                 </div>
                 <div className="flex justify-between font-semibold">
                   <span>Balance Amount</span>
-                  <span>${formatMoney(booking.balanceAmount)}</span>
+                  <span>MMK {formatMoney(booking.balanceAmount)}</span>
                 </div>
               </div>
             </div>
 
-            {booking.bookingStatus === "cancelled" && payments.length > 0 && (
+            {isReceptionist && booking.bookingStatus === "cancelled" && payments.length > 0 && (
               <div className="bg-white rounded-2xl shadow p-5">
                 <h2 className="text-xl font-semibold mb-4 border-b pb-2">
                   Create Refund
@@ -552,7 +578,9 @@ export default function AdminBookingDetailPage() {
                 )}
                 <div className="space-y-4 text-sm">
                   <div>
-                    <label className="block mb-1 font-medium">Payment ID *</label>
+                    <label className={`block mb-1 font-bold uppercase text-[10px] tracking-wider ${attemptedRefundSubmit && !selectedPaymentID ? "text-red-500" : "text-gray-500"}`}>
+                      Payment ID <span className="font-normal opacity-70">(required)</span>
+                    </label>
                     <select
                       value={selectedPaymentID}
                       onChange={(e) => {
@@ -562,37 +590,41 @@ export default function AdminBookingDetailPage() {
                         if (numVal !== "") {
                           const payment = payments.find((p) => p.paymentID === numVal);
                           if (payment) {
-                            setRefundAmount((payment.amount * 0.5).toFixed(2));
+                            setRefundAmount((payment.amount * 0.5).toFixed(0));
                           }
                         } else {
                           setRefundAmount("");
                         }
                       }}
-                      className="w-full border rounded-lg px-3 py-2"
+                      className={`w-full border rounded-xl px-4 py-3 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${attemptedRefundSubmit && !selectedPaymentID ? "border-red-500 bg-red-50" : "border-gray-200"}`}
                     >
                       <option value="">Select a payment</option>
                       {payments.map((p) => (
                         <option key={p.paymentID} value={p.paymentID}>
-                          ID: {p.paymentID} - ${formatMoney(p.amount)} ({p.paymentMethod})
+                          ID: {p.paymentID} - MMK {formatMoney(p.amount)} ({p.paymentMethod})
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block mb-1 font-medium">Refund Amount *</label>
+                    <label className={`block mb-1 font-bold uppercase text-[10px] tracking-wider ${attemptedRefundSubmit && !refundAmount ? "text-red-500" : "text-gray-500"}`}>
+                      Refund Amount <span className="font-normal opacity-70">(required)</span>
+                    </label>
                     <input
                       type="number"
-                      step="0.01"
+                      step="1"
                       min="0"
                       value={refundAmount}
                       onChange={(e) => setRefundAmount(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2"
+                      className={`w-full border rounded-xl px-4 py-3 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${attemptedRefundSubmit && !refundAmount ? "border-red-500 bg-red-50" : "border-gray-200"}`}
                     />
                   </div>
 
                   <div>
-                    <label className="block mb-1 font-medium">Refund Method *</label>
+                    <label className={`block mb-1 font-bold uppercase text-[10px] tracking-wider ${attemptedRefundSubmit && !refundMethod ? "text-red-500" : "text-gray-500"}`}>
+                      Refund Method <span className="font-normal opacity-70">(required)</span>
+                    </label>
                     <select
                       value={refundMethod}
                       onChange={(e) =>
@@ -605,7 +637,7 @@ export default function AdminBookingDetailPage() {
                             | "card"
                         )
                       }
-                      className="w-full border rounded-lg px-3 py-2"
+                      className={`w-full border rounded-xl px-4 py-3 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${attemptedRefundSubmit && !refundMethod ? "border-red-500 bg-red-50" : "border-gray-200"}`}
                     >
                       <option value="cash">Cash</option>
                       <option value="kbzpay">KBZPay</option>
@@ -618,31 +650,31 @@ export default function AdminBookingDetailPage() {
                   {/* Refund status defaults to pending and shouldn't be mutable here */}
 
                   <div>
-                    <label className="block mb-1 font-medium">Reason</label>
+                    <label className="block mb-1 font-bold uppercase text-[10px] tracking-wider text-gray-500">Reason</label>
                     <textarea
                       value={refundReason}
                       onChange={(e) => setRefundReason(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                       rows={2}
                     />
                   </div>
 
                   <div>
-                    <label className="block mb-1 font-medium">Refund Ref</label>
+                    <label className="block mb-1 font-bold uppercase text-[10px] tracking-wider text-gray-500">Refund Ref</label>
                     <input
                       type="text"
                       value={refundRef}
                       onChange={(e) => setRefundRef(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block mb-1 font-medium">Note</label>
+                    <label className="block mb-1 font-bold uppercase text-[10px] tracking-wider text-gray-500">Note</label>
                     <textarea
                       value={refundNote}
                       onChange={(e) => setRefundNote(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                       rows={2}
                     />
                   </div>

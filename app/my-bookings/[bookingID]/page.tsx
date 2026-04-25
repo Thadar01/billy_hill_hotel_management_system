@@ -119,7 +119,7 @@ interface Feedback {
 }
 
 function formatMoney(value: number | string) {
-  return Number(value || 0).toFixed(2);
+  return Number(value || 0).toLocaleString();
 }
 
 function formatDate(value?: string | null, mounted?: boolean) {
@@ -426,10 +426,10 @@ export default function BookingDetailPage() {
                           <p className="text-sm text-gray-600">Room ID: {room.roomID}</p>
                         </div>
                         <div className="text-sm md:text-right">
-                          <p>Price/Night: ${formatMoney(room.pricePerNight)}</p>
+                          <p>Price/Night: MMK {formatMoney(room.pricePerNight)}</p>
                           <p>Nights: {room.nights}</p>
                           <p className="font-semibold">
-                            Line Total: ${formatMoney(room.lineTotal)}
+                            Line Total: MMK {formatMoney(room.lineTotal)}
                           </p>
                         </div>
                       </div>
@@ -461,12 +461,12 @@ export default function BookingDetailPage() {
                           )}
                         </div>
                         <div className="text-sm md:text-right">
-                          <p>Unit Price: ${formatMoney(service.unitPrice)}</p>
+                          <p>Unit Price: MMK {formatMoney(service.unitPrice)}</p>
                           <p className="capitalize">
                             Pricing Type: {service.pricingType.replaceAll("_", " ")}
                           </p>
                           <p className="font-semibold">
-                            Line Total: ${formatMoney(service.lineTotal)}
+                            Line Total: MMK {formatMoney(service.lineTotal)}
                           </p>
                         </div>
                       </div>
@@ -496,7 +496,7 @@ export default function BookingDetailPage() {
                       {payments.map((payment) => (
                         <tr key={payment.paymentID} className="border-b">
                           <td className="py-2">{payment.paymentID}</td>
-                          <td className="py-2">${formatMoney(payment.amount)}</td>
+                          <td className="py-2">MMK {formatMoney(payment.amount)}</td>
                           <td className="py-2 capitalize">{payment.paymentMethod}</td>
                           <td className="py-2 capitalize">{payment.paymentStatus}</td>
                         </tr>
@@ -527,7 +527,7 @@ export default function BookingDetailPage() {
                       {refunds.map((refund) => (
                         <tr key={refund.refundID} className="border-b">
                           <td className="py-2">{refund.refundID}</td>
-                          <td className="py-2">${formatMoney(refund.refundAmount)}</td>
+                          <td className="py-2">MMK {formatMoney(refund.refundAmount)}</td>
                           <td className="py-2 capitalize">{refund.refundMethod}</td>
                           <td className="py-2 capitalize">{refund.refundStatus}</td>
                         </tr>
@@ -597,15 +597,15 @@ export default function BookingDetailPage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span>Room Subtotal</span>
-                  <span>${formatMoney(booking.roomSubtotal)}</span>
+                  <span>MMK {formatMoney(booking.roomSubtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Service Subtotal</span>
-                  <span>${formatMoney(booking.serviceSubtotal)}</span>
+                  <span>MMK {formatMoney(booking.serviceSubtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Discount Amount</span>
-                  <span>${formatMoney(booking.discountAmount)}</span>
+                  <span>MMK {formatMoney(booking.discountAmount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Points Used</span>
@@ -613,29 +613,29 @@ export default function BookingDetailPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Points Discount</span>
-                  <span>${formatMoney(booking.pointsDiscountAmount)}</span>
+                  <span>MMK {formatMoney(booking.pointsDiscountAmount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax Amount</span>
-                  <span>${formatMoney(booking.taxAmount)}</span>
+                  <span>MMK {formatMoney(booking.taxAmount)}</span>
                 </div>
 
                 <div className="border-t pt-3 flex justify-between font-semibold">
                   <span>Total Amount</span>
-                  <span>${formatMoney(booking.totalAmount)}</span>
+                  <span>MMK {formatMoney(booking.totalAmount)}</span>
                 </div>
 
                 <div className="flex justify-between text-green-700">
                   <span>Paid Amount</span>
-                  <span>${formatMoney(booking.paidAmount)}</span>
+                  <span>MMK {formatMoney(booking.paidAmount)}</span>
                 </div>
                 <div className="flex justify-between text-red-600">
                   <span>Refunded Amount</span>
-                  <span>${formatMoney(booking.refundedAmount)}</span>
+                  <span>MMK {formatMoney(booking.refundedAmount)}</span>
                 </div>
                 <div className="flex justify-between font-semibold">
                   <span>Balance Amount</span>
-                  <span>${formatMoney(booking.balanceAmount)}</span>
+                  <span>MMK {formatMoney(booking.balanceAmount)}</span>
                 </div>
               </div>
 

@@ -203,7 +203,7 @@ export default function StaffPage() {
                     setOpenStaffId(nextOpen);
                     if (nextOpen) fetchPerformance(nextOpen);
                   }}
-                  className="w-full flex justify-between items-center p-5 md:p-8 text-left transition-colors"
+                  className="w-full flex justify-between items-center p-4 md:p-6 text-left transition-colors"
                 >
                   <div className="flex items-center gap-5">
                     <div>
@@ -225,59 +225,57 @@ export default function StaffPage() {
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 md:px-8 pb-8 pt-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className="grid grid-cols-1 gap-8 border-t border-gray-100 pt-6">
+                  <div className="px-4 md:px-6 pb-6 pt-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-t border-gray-100 pt-6">
                       {/* Detailed Info Card */}
-                      <div className="space-y-6 p-2">
-                        <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                          <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Contact & Compensation</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Primary Phone</p>
-                              <p className="text-sm font-semibold text-gray-900">{staff.staff_phone}</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Base Hourly Rate</p>
-                              <p className="text-sm font-semibold text-gray-900">{Number(staff.salary_rate).toFixed(2)} MMK/hr</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">OT Premium Fee</p>
-                              <p className="text-sm font-semibold text-gray-900">{Number(staff.overtime_fees).toFixed(2)} MMK/hr</p>
-                            </div>
+                      <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 h-full">
+                        <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Contact & Compensation</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Primary Phone</p>
+                            <p className="text-sm font-semibold text-gray-900">{staff.staff_phone}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Base Hourly Rate</p>
+                            <p className="text-sm font-semibold text-gray-900">{Number(staff.salary_rate)} MMK/hr</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">OT Premium Fee</p>
+                            <p className="text-sm font-semibold text-gray-900">{Number(staff.overtime_fees)} MMK/hr</p>
                           </div>
                         </div>
+                      </div>
 
-                        {/* Performance Stats */}
-                        <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                          <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Last 30 Days Cycle</h4>
-                          {fetchingExtra === staff.staff_id ? (
-                            <div className="animate-pulse space-y-4">
-                              <div className="h-6 bg-gray-200 rounded w-full"></div>
-                              <div className="h-6 bg-gray-200 rounded w-full"></div>
+                      {/* Performance Stats */}
+                      <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Last 30 Days Cycle</h4>
+                        {fetchingExtra === staff.staff_id ? (
+                          <div className="animate-pulse space-y-4">
+                            <div className="h-6 bg-gray-200 rounded w-full"></div>
+                            <div className="h-6 bg-gray-200 rounded w-full"></div>
+                          </div>
+                        ) : performanceData[staff.staff_id] ? (
+                          <div className="grid grid-cols-3 gap-4 text-left">
+                            <div>
+                              <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Worked</div>
+                              <div className="text-xl font-semibold text-gray-900">{performanceData[staff.staff_id].stats.totalWorkedHours}h</div>
                             </div>
-                          ) : performanceData[staff.staff_id] ? (
-                            <div className="grid grid-cols-3 gap-4 text-left">
-                              <div>
-                                <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Worked</div>
-                                <div className="text-xl font-semibold text-gray-900">{performanceData[staff.staff_id].stats.totalWorkedHours}h</div>
-                              </div>
-                              <div>
-                                <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Overtime</div>
-                                <div className="text-xl font-semibold text-gray-900">{(performanceData[staff.staff_id].stats.totalOvertimeMinutes / 60).toFixed(1)}h</div>
-                              </div>
-                              <div>
-                                <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Late Arrival</div>
-                                <div className="text-xl font-semibold text-gray-900">{(performanceData[staff.staff_id].stats.totalLateMinutes / 60).toFixed(1)}h</div>
-                              </div>
+                            <div>
+                              <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Overtime</div>
+                              <div className="text-xl font-semibold text-gray-900">{(performanceData[staff.staff_id].stats.totalOvertimeMinutes / 60).toFixed(1)}h</div>
                             </div>
-                          ) : (
-                            <p className="text-xs text-gray-500 italic py-4">No attendance data recorded in this period</p>
-                          )}
-                        </div>
+                            <div>
+                              <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Late Arrival</div>
+                              <div className="text-xl font-semibold text-gray-900">{(performanceData[staff.staff_id].stats.totalLateMinutes / 60).toFixed(1)}h</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-500 italic py-4">No attendance data recorded in this period</p>
+                        )}
                       </div>
                     </div>
 
-                    {isManager && <div className="flex flex-row sm:flex-col gap-4 mt-8 pt-6 mb-2 ml-2 mr-2 border-t border-gray-100">
+                    {isManager && <div className="flex flex-row flex-wrap gap-2 mt-8 pt-6 border-t border-gray-100">
                       <button
                         onClick={() => handleEdit(staff)}
                         className="flex-1 py-3 rounded bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
@@ -288,7 +286,7 @@ export default function StaffPage() {
                         onClick={() => handleReset(staff.staff_id)}
                         className="flex-1 py-3 rounded bg-blue-300 text-black font-medium text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                       >
-                        Reset Access
+                        Reset Password
                       </button>
                       <button
                         onClick={() => handleDelete(staff.staff_id)}

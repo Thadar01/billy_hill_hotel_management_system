@@ -36,7 +36,7 @@ interface Booking {
 }
 
 function formatMoney(value: number | string) {
-  return Number(value || 0).toFixed(2);
+  return Number(value || 0).toLocaleString();
 }
 
 function formatDate(value?: string | null, mounted?: boolean) {
@@ -261,14 +261,14 @@ export default function MyBookingsPage() {
                   <div>
                     <p className="text-gray-500">Room Subtotal</p>
                     <p className="font-medium">
-                      ${formatMoney(booking.roomSubtotal)}
+                      MMK {formatMoney(booking.roomSubtotal)}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-gray-500">Service Subtotal</p>
                     <p className="font-medium">
-                      ${formatMoney(booking.serviceSubtotal)}
+                      MMK {formatMoney(booking.serviceSubtotal)}
                     </p>
                   </div>
 
@@ -281,14 +281,14 @@ export default function MyBookingsPage() {
                   <div>
                     <p className="text-gray-500">Total Amount</p>
                     <p className="font-medium">
-                      ${formatMoney(booking.totalAmount)}
+                      MMK {formatMoney(booking.totalAmount)}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-gray-500">Balance Amount</p>
                     <p className="font-medium">
-                      ${formatMoney(booking.balanceAmount)}
+                      MMK {formatMoney(booking.balanceAmount)}
                     </p>
                   </div>
                 </div>
@@ -306,7 +306,7 @@ export default function MyBookingsPage() {
                     </button>
                   )}
 
-                  {(booking.bookingStatus === "checked_out" || booking.bookingStatus === "confirmed") && (
+                  {booking.bookingStatus === "checked_out" && (
                     <Link
                       href={`/feedback/${booking.bookingID}`}
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg"
