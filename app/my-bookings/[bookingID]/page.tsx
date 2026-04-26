@@ -400,191 +400,191 @@ export default function BookingDetailPage() {
         </div>
 
         <div className="space-y-6">
-            <div className="bg-white shadow rounded-2xl p-5">
-              <h2 className="text-xl font-semibold mb-4">Booking Information</h2>
+          <div className="bg-white shadow rounded-2xl p-5">
+            <h2 className="text-xl font-semibold mb-4">Booking Information</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500">Customer Name</p>
+                <p className="font-medium">{booking.fullName}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Email</p>
+                <p className="font-medium">{booking.email}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Phone</p>
+                <p className="font-medium">{booking.phone}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Created At</p>
+                <p className="font-medium">{formatDate(booking.createdAt, mounted)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Check-in Date</p>
+                <p className="font-medium">{formatDate(booking.checkInDate, mounted)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Check-out Date</p>
+                <p className="font-medium">{formatDate(booking.checkOutDate, mounted)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Check-in Time</p>
+                <p className="font-medium">{booking.checkInTime || "-"}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Check-out Time</p>
+                <p className="font-medium">{booking.checkOutTime || "-"}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Actual Check-in</p>
+                <p className="font-medium">{formatDate(booking.actualCheckInAt, mounted)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Actual Check-out</p>
+                <p className="font-medium">{formatDate(booking.actualCheckOutAt, mounted)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Booking Status</p>
+                <p className="font-medium capitalize">{booking.bookingStatus}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Payment Status</p>
+                <p className="font-medium capitalize">{booking.paymentStatus}</p>
+              </div>
+            </div>
+
+            {isEditing ? (
+              <div className="mt-6 border-t pt-6 space-y-4">
+                <h3 className="font-semibold mb-2">Update Details</h3>
                 <div>
-                  <p className="text-gray-500">Customer Name</p>
-                  <p className="font-medium">{booking.fullName}</p>
+                  <label className="block text-sm text-gray-500 mb-1">Phone</label>
+                  <input
+                    type="text"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                  />
                 </div>
                 <div>
-                  <p className="text-gray-500">Email</p>
-                  <p className="font-medium">{booking.email}</p>
+                  <label className="block text-sm text-gray-500 mb-1">Special Request</label>
+                  <textarea
+                    value={editForm.specialRequest}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, specialRequest: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    rows={2}
+                  />
                 </div>
                 <div>
-                  <p className="text-gray-500">Phone</p>
-                  <p className="font-medium">{booking.phone}</p>
+                  <label className="block text-sm text-gray-500 mb-1">Note</label>
+                  <textarea
+                    value={editForm.note}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, note: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    rows={2}
+                  />
                 </div>
-                <div>
-                  <p className="text-gray-500">Created At</p>
-                  <p className="font-medium">{formatDate(booking.createdAt, mounted)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Check-in Date</p>
-                  <p className="font-medium">{formatDate(booking.checkInDate, mounted)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Check-out Date</p>
-                  <p className="font-medium">{formatDate(booking.checkOutDate, mounted)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Check-in Time</p>
-                  <p className="font-medium">{booking.checkInTime || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Check-out Time</p>
-                  <p className="font-medium">{booking.checkOutTime || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Actual Check-in</p>
-                  <p className="font-medium">{formatDate(booking.actualCheckInAt, mounted)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Actual Check-out</p>
-                  <p className="font-medium">{formatDate(booking.actualCheckOutAt, mounted)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Booking Status</p>
-                  <p className="font-medium capitalize">{booking.bookingStatus}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Payment Status</p>
-                  <p className="font-medium capitalize">{booking.paymentStatus}</p>
+                <div className="flex justify-end gap-3 mt-4">
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 text-sm border rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpdateDetails}
+                    disabled={updating}
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50"
+                  >
+                    {updating ? "Saving..." : "Save Changes"}
+                  </button>
                 </div>
               </div>
-
-              {isEditing ? (
-                <div className="mt-6 border-t pt-6 space-y-4">
-                  <h3 className="font-semibold mb-2">Update Details</h3>
-                  <div>
-                    <label className="block text-sm text-gray-500 mb-1">Phone</label>
-                    <input
-                      type="text"
-                      value={editForm.phone}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                    />
+            ) : (
+              <>
+                {booking.specialRequest && (
+                  <div className="mt-5">
+                    <p className="text-gray-500 text-sm">Special Request</p>
+                    <p className="font-medium">{booking.specialRequest}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm text-gray-500 mb-1">Special Request</label>
-                    <textarea
-                      value={editForm.specialRequest}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, specialRequest: e.target.value }))}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                      rows={2}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-500 mb-1">Note</label>
-                    <textarea
-                      value={editForm.note}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, note: e.target.value }))}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                      rows={2}
-                    />
-                  </div>
-                  <div className="flex justify-end gap-3 mt-4">
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="px-4 py-2 text-sm border rounded-lg"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleUpdateDetails}
-                      disabled={updating}
-                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50"
-                    >
-                      {updating ? "Saving..." : "Save Changes"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {booking.specialRequest && (
-                    <div className="mt-5">
-                      <p className="text-gray-500 text-sm">Special Request</p>
-                      <p className="font-medium">{booking.specialRequest}</p>
-                    </div>
-                  )}
+                )}
 
-                  {booking.note && (
-                    <div className="mt-3">
-                      <p className="text-gray-500 text-sm">Note</p>
-                      <p className="font-medium">{booking.note}</p>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+                {booking.note && (
+                  <div className="mt-3">
+                    <p className="text-gray-500 text-sm">Note</p>
+                    <p className="font-medium">{booking.note}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
-            <div className="bg-white shadow rounded-2xl p-5">
-              <h2 className="text-xl font-semibold mb-4">Booked Rooms</h2>
+          <div className="bg-white shadow rounded-2xl p-5">
+            <h2 className="text-xl font-semibold mb-4">Booked Rooms</h2>
 
-              {rooms.length === 0 ? (
-                <p className="text-gray-500">No rooms in this booking.</p>
-              ) : (
-                <div className="space-y-4">
-                  {rooms.map((room) => (
-                    <div key={room.bookingRoomID} className="border rounded-xl p-4">
-                      <div className="flex flex-col md:flex-row md:justify-between gap-3">
-                        <div>
-                          <h3 className="font-semibold">
-                            {room.roomNumber} - {room.roomType}
-                          </h3>
-                          <p className="text-sm text-gray-600">Room ID: {room.roomID}</p>
-                        </div>
-                        <div className="text-sm md:text-right">
-                          <p>Price/Night: MMK {formatMoney(room.pricePerNight)}</p>
-                          <p>Nights: {room.nights}</p>
-                          <p className="font-semibold">
-                            Line Total: MMK {formatMoney(room.lineTotal)}
-                          </p>
-                        </div>
+            {rooms.length === 0 ? (
+              <p className="text-gray-500">No rooms in this booking.</p>
+            ) : (
+              <div className="space-y-4">
+                {rooms.map((room) => (
+                  <div key={room.bookingRoomID} className="border rounded-xl p-4">
+                    <div className="flex flex-col md:flex-row md:justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold">
+                          {room.roomNumber} - {room.roomType}
+                        </h3>
+                        <p className="text-sm text-gray-600">Room ID: {room.roomID}</p>
+                      </div>
+                      <div className="text-sm md:text-right">
+                        <p>Price/Night: MMK {formatMoney(room.pricePerNight)}</p>
+                        <p>Nights: {room.nights}</p>
+                        <p className="font-semibold">
+                          Line Total: MMK {formatMoney(room.lineTotal)}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-            <div className="bg-white shadow rounded-2xl p-5">
-              <h2 className="text-xl font-semibold mb-4">Premium Services</h2>
+          <div className="bg-white shadow rounded-2xl p-5">
+            <h2 className="text-xl font-semibold mb-4">Premium Services</h2>
 
-              {services.length === 0 ? (
-                <p className="text-gray-500">No premium services selected.</p>
-              ) : (
-                <div className="space-y-4">
-                  {services.map((service) => (
-                    <div
-                      key={service.bookingServiceID}
-                      className="border rounded-xl p-4"
-                    >
-                      <div className="flex flex-col md:flex-row md:justify-between gap-3">
-                        <div>
-                          <h3 className="font-semibold">{service.serviceName}</h3>
-                          {service.serviceDescription && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              {service.serviceDescription}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-sm md:text-right">
-                          <p>Unit Price: MMK {formatMoney(service.unitPrice)}</p>
-                          <p className="capitalize">
-                            Pricing Type: {service.pricingType.replaceAll("_", " ")}
+            {services.length === 0 ? (
+              <p className="text-gray-500">No premium services selected.</p>
+            ) : (
+              <div className="space-y-4">
+                {services.map((service) => (
+                  <div
+                    key={service.bookingServiceID}
+                    className="border rounded-xl p-4"
+                  >
+                    <div className="flex flex-col md:flex-row md:justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold">{service.serviceName}</h3>
+                        {service.serviceDescription && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            {service.serviceDescription}
                           </p>
-                          <p className="font-semibold">
-                            Line Total: MMK {formatMoney(service.lineTotal)}
-                          </p>
-                        </div>
+                        )}
+                      </div>
+                      <div className="text-sm md:text-right">
+                        <p>Unit Price: MMK {formatMoney(service.unitPrice)}</p>
+                        <p className="capitalize">
+                          Pricing Type: {service.pricingType.replaceAll("_", " ")}
+                        </p>
+                        <p className="font-semibold">
+                          Line Total: MMK {formatMoney(service.lineTotal)}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
         </div>
 
@@ -660,12 +660,7 @@ export default function BookingDetailPage() {
                     <MessageSquare className="text-blue-600" size={20} />
                     <h2 className="text-xl font-semibold">Feedback</h2>
                   </div>
-                  <Link
-                    href={`/feedback/${booking.bookingID}`}
-                    className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    {feedbacks.length > 0 ? "Update Feedback" : "Leave Feedback"}
-                  </Link>
+
                 </div>
 
                 {feedbacks.length === 0 ? (
