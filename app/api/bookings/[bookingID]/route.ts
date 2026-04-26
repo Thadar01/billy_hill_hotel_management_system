@@ -162,3 +162,130 @@ export async function GET(
     );
   }
 }
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ bookingID: string }> }
+) {
+  const connection = await pool.getConnection();
+
+  try {
+    const { bookingID } = await params;
+    const body = await req.json().catch(() => ({}));
+    const { customerID, phone, specialRequest, note } = body as {
+      customerID?: string;
+      phone?: string;
+      specialRequest?: string;
+      note?: string;
+    };
+
+    await connection.beginTransaction();
+
+    const [rows] = await connection.query<RowDataPacket[]>(
+      `
+      SELECT bookingID, customerID, bookingStatus, 
+             DATE_FORMAT(checkInDate, '%Y-%m-%d') AS checkInDate,
+             TIME_FORMAT(checkInTime, '%H:%i:%s') AS checkInTime
+      FROM bookings
+      WHERE bookingID = ?
+      `,
+      [bookingID]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return NextResponse.json(
+        { error: "Booking not found" },
+        { status: 404 }
+      );
+    }
+
+    const booking = rows[0];
+
+    if (!customerID) {
+      await connection.rollback();
+      return NextResponse.json(
+        { error: "customerID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (booking.customerID !== customerID) {
+      await connection.rollback();
+      return NextResponse.json(
+        { error: "You are not allowed to update this booking" },
+        { status: 403 }
+      );
+    }
+
+    if (booking.bookingStatus !== "confirmed") {
+      await connection.rollback();
+      return NextResponse.json(
+        {
+          error: `Only confirmed bookings can be updated. Current status: ${booking.bookingStatus}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // 24 hour restriction
+    if (booking.checkInDate) {
+      const checkInTimeStr = booking.checkInTime || "14:00:00";
+      const checkInDateTime = new Date(`${booking.checkInDate}T${checkInTimeStr}`);
+      const now = new Date();
+      
+      const diffMs = checkInDateTime.getTime() - now.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      if (diffHours < 24) {
+        await connection.rollback();
+        return NextResponse.json(
+          { error: "You cannot update booking details within 24 hours of check-in." },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Update customer phone if provided
+    if (phone) {
+      await connection.query(
+        `
+        UPDATE customers
+        SET phone = ?
+        WHERE customerID = ?
+        `,
+        [phone, customerID]
+      );
+    }
+
+    // Update booking specialRequest and note
+    await connection.query(
+      `
+      UPDATE bookings
+      SET specialRequest = ?, note = ?
+      WHERE bookingID = ?
+      `,
+      [specialRequest || null, note || null, bookingID]
+    );
+
+    await connection.commit();
+
+    return NextResponse.json({
+      message: "Booking details updated successfully",
+      bookingID,
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error("Update booking error:", error);
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to update booking",
+      },
+      { status: 500 }
+    );
+  } finally {
+    connection.release();
+  }
+}

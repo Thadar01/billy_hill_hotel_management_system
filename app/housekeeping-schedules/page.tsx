@@ -264,7 +264,7 @@ export default function HousekeepingSchedulesPage() {
                         <div className="flex gap-2">
                           <Link
                             href={`/housekeeping-schedules/${schedule.housekeeping_id}/edit`}
-                            className="rounded-lg bg-amber-500 px-3 py-1 text-sm text-white hover:bg-amber-600"
+                            className="rounded-lg bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
                           >
                             Edit
                           </Link>

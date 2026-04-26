@@ -61,6 +61,11 @@ export default function EditStaffPage() {
       }
 
       const parsedStaff = JSON.parse(decodeURIComponent(encodedData));
+      
+      // Remove decimals from numeric fields
+      if (parsedStaff.salary_rate) parsedStaff.salary_rate = Math.floor(Number(parsedStaff.salary_rate));
+      if (parsedStaff.overtime_fees) parsedStaff.overtime_fees = Math.floor(Number(parsedStaff.overtime_fees));
+      
       setStaff(parsedStaff);
     } catch (err) {
       console.error("Invalid staff data");

@@ -17,14 +17,34 @@ export default function UserRegisterPage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const isFieldInvalid = (fieldName: string) => {
+    const value = form[fieldName as keyof typeof form];
+    
+    if (fieldName === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return (value.length > 0 && !emailRegex.test(value)) || (attemptedSubmit && !emailRegex.test(value));
+    }
+    
+    if (fieldName === "confirmPassword" && attemptedSubmit) {
+      return !value || value !== form.password;
+    }
+
+    if (!attemptedSubmit) return false;
+    if (!value) return true;
+    
+    return false;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAttemptedSubmit(true);
 
     if (
       !form.fullName ||
@@ -34,6 +54,12 @@ export default function UserRegisterPage() {
       !form.confirmPassword
     ) {
       alert("Please fill all required fields.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      alert("Invalid email format.");
       return;
     }
 
@@ -62,6 +88,7 @@ export default function UserRegisterPage() {
 
       if (!response.ok) {
         alert(data.error || "Failed to register.");
+        setLoading(false);
         return;
       }
 
@@ -70,7 +97,6 @@ export default function UserRegisterPage() {
     } catch (error) {
       console.error("Register error:", error);
       alert("Something went wrong.");
-    } finally {
       setLoading(false);
     }
   };
@@ -86,74 +112,74 @@ export default function UserRegisterPage() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-black">
-                Full Name
+              <label className={`mb-1 block text-sm font-medium ${isFieldInvalid("fullName") ? "text-red-500" : "text-black"}`}>
+                Full Name <span className="text-xs font-normal opacity-70">(required)</span>
               </label>
               <input
                 type="text"
                 name="fullName"
                 value={form.fullName}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                className={`w-full rounded-lg border px-4 py-3 outline-none transition-colors ${isFieldInvalid("fullName") ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-blue-500"}`}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black">
-                Email
+              <label className={`mb-1 block text-sm font-medium ${isFieldInvalid("email") ? "text-red-500" : "text-black"}`}>
+                Email <span className="text-xs font-normal opacity-70">(required)</span>
               </label>
               <input
                 type="email"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                className={`w-full rounded-lg border px-4 py-3 outline-none transition-colors ${isFieldInvalid("email") ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-blue-500"}`}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black">
-                Phone
+              <label className={`mb-1 block text-sm font-medium ${isFieldInvalid("phone") ? "text-red-500" : "text-black"}`}>
+                Phone <span className="text-xs font-normal opacity-70">(required)</span>
               </label>
               <input
                 type="text"
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                className={`w-full rounded-lg border px-4 py-3 outline-none transition-colors ${isFieldInvalid("phone") ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-blue-500"}`}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black">
-                Password
+              <label className={`mb-1 block text-sm font-medium ${isFieldInvalid("password") ? "text-red-500" : "text-black"}`}>
+                Password <span className="text-xs font-normal opacity-70">(required)</span>
               </label>
               <input
                 type="password"
                 name="password"
                 value={form.password}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                className={`w-full rounded-lg border px-4 py-3 outline-none transition-colors ${isFieldInvalid("password") ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-blue-500"}`}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black">
-                Confirm Password
+              <label className={`mb-1 block text-sm font-medium ${isFieldInvalid("confirmPassword") ? "text-red-500" : "text-black"}`}>
+                Confirm Password <span className="text-xs font-normal opacity-70">(required)</span>
               </label>
               <input
                 type="password"
                 name="confirmPassword"
                 value={form.confirmPassword}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                className={`w-full rounded-lg border px-4 py-3 outline-none transition-colors ${isFieldInvalid("confirmPassword") ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-blue-500"}`}
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700 disabled:opacity-60 transition-colors"
             >
               {loading ? "Registering..." : "Register"}
             </button>

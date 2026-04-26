@@ -30,14 +30,15 @@ interface RoomFormProps {
 export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [isDuplicateRoomNumber, setIsDuplicateRoomNumber] = useState(false);
+
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [formData, setFormData] = useState({
     roomNumber: initialData?.roomNumber || "",
     roomType: initialData?.roomType || "",
     description: initialData?.description || "",
-    price: initialData?.price || "",
+    price: initialData?.price ? Math.floor(Number(initialData.price)) : "",
     floor: initialData?.floor || "",
     roomSize: initialData?.roomSize || "",
     bed: initialData?.bed || "",
@@ -50,6 +51,12 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    
+    // Reset duplicate error when user starts typing a new room number
+    if (name === "roomNumber") {
+      setIsDuplicateRoomNumber(false);
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
@@ -76,17 +83,17 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAttemptedSubmit(true);
-    
+
     // Basic validation
     const requiredFields = ["roomNumber", "roomType", "price", "floor", "roomSize", "bed", "person", "bathroom", "description"];
     const isMissing = requiredFields.some(field => !formData[field as keyof typeof formData]);
-    if (isMissing) {
-      alert("Please Fill all the required fields");
+    
+    if (isMissing || images.length === 0) {
+      alert("Please Fill all the required fields and upload at least one image");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
       const submitFormData = new FormData();
@@ -128,15 +135,20 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
       const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(responseData.error || responseData.details || 'Failed to save room');
+        // If the error is about a duplicate room number, set the state to highlight the box
+        if (responseData.error?.includes("Room number already exists")) {
+          setIsDuplicateRoomNumber(true);
+        }
+        alert(responseData.error || responseData.details || 'Failed to save room');
+        setLoading(false);
+        return;
       }
 
       router.push('/rooms');
       router.refresh();
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save room");
-      console.error(err);
+      // Silent error handling for dev overlay
     } finally {
       setLoading(false);
     }
@@ -147,16 +159,12 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
 
 
       <div className="bg-white rounded-lg shadow-lg p-6">
-        {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Room Number */}
           <div>
-            <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.roomNumber ? "text-red-500" : "text-gray-500 text-sm"}`}>
+            <label className={`block font-bold uppercase tracking-wider mb-2 ${(attemptedSubmit && !formData.roomNumber) || isDuplicateRoomNumber ? "text-red-500" : "text-gray-500 text-sm"}`}>
               Room Number <span className="text-[10px] font-normal opacity-70">(required)</span>
             </label>
             <input
@@ -164,7 +172,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
               name="roomNumber"
               value={formData.roomNumber}
               onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.roomNumber ? "border-red-500 bg-red-50" : "border-gray-200"}`}
+              className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${(attemptedSubmit && !formData.roomNumber) || isDuplicateRoomNumber ? "border-red-500 bg-red-50" : "border-gray-200"}`}
               placeholder="e.g., 101"
             />
           </div>
@@ -213,11 +221,11 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
             <input
               type="number"
               name="floor"
-              min="1"
+              min="0"
               value={formData.floor}
               onChange={handleChange}
               className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.floor ? "border-red-500 bg-red-50" : "border-gray-200"}`}
-              placeholder="1"
+              placeholder="0"
             />
           </div>
 
@@ -233,7 +241,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
               value={formData.roomSize}
               onChange={handleChange}
               className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.roomSize ? "border-red-500 bg-red-50" : "border-gray-200"}`}
-              placeholder="25"
+              placeholder="0"
             />
           </div>
 
@@ -249,7 +257,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
               value={formData.bed}
               onChange={handleChange}
               className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.bed ? "border-red-500 bg-red-50" : "border-gray-200"}`}
-              placeholder="1"
+              placeholder="0"
             />
           </div>
 
@@ -265,7 +273,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
               value={formData.person}
               onChange={handleChange}
               className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.person ? "border-red-500 bg-red-50" : "border-gray-200"}`}
-              placeholder="2"
+              placeholder="0"
             />
           </div>
 
@@ -281,7 +289,7 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
               value={formData.bathroom}
               onChange={handleChange}
               className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.bathroom ? "border-red-500 bg-red-50" : "border-gray-200"}`}
-              placeholder="1"
+              placeholder="0"
             />
           </div>
 
@@ -351,8 +359,8 @@ export default function RoomForm({ initialData, onSubmit }: RoomFormProps) {
 
         {/* Image Upload */}
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Room Images
+          <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && images.length === 0 ? "text-red-500" : "text-gray-500 text-sm"}`}>
+            Room Images <span className="text-[10px] font-normal opacity-70">(required)</span>
           </label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
             <input

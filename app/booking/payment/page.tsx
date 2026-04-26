@@ -144,7 +144,7 @@ export default function PaymentPage() {
   return (
     <UserLayout>
       <div className="max-w-4xl mx-auto px-4 py-12 text-black bg-gray-50/30 min-h-screen">
-        <div className="flex items-center justify-center gap-2 mb-10">
+        <div className="flex  gap-2 mb-10">
           <button
             onClick={() => router.back()}
             className="text-black text-xl font-bold hover:text-gray-700 transition-colors"
@@ -155,7 +155,7 @@ export default function PaymentPage() {
           <h1 className="text-3xl font-bold text-center">Finalize Your Payment</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-rows-1 gap-10 ">
           {/* Summary */}
           <div className="lg:col-span-5 space-y-8">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
@@ -221,9 +221,8 @@ export default function PaymentPage() {
 
               <div className="space-y-6">
                 <div className="relative">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">Amount to Pay Now</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">Amount to Pay Now (MMK)</label>
                   <div className="relative flex items-center">
-                    <span className="absolute left-5 text-gray-500 font-bold text-lg">MMK</span>
                     <input
                       type="number"
                       min={tempBooking.minDeposit}

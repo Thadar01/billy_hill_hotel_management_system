@@ -16,6 +16,7 @@ interface Discount {
   isActive: boolean;
   createdAt: string;
   roomIDs: string[];
+  roomNumbers?: string[];
 }
 
 export default function DiscountsPage() {
@@ -95,7 +96,8 @@ export default function DiscountsPage() {
         discount.discountName.toLowerCase().includes(q) ||
         discount.discountType.toLowerCase().includes(q) ||
         (discount.description || "").toLowerCase().includes(q) ||
-        discount.roomIDs.some((roomID) => roomID.toLowerCase().includes(q))
+        discount.roomIDs.some((roomID) => roomID.toLowerCase().includes(q)) ||
+        (discount.roomNumbers && discount.roomNumbers.some((num) => num.toLowerCase().includes(q)))
       );
     });
   }, [discounts, search]);
@@ -188,15 +190,15 @@ export default function DiscountsPage() {
 
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
-                          {discount.roomIDs.length === 0 ? (
+                          {!discount.roomNumbers || discount.roomNumbers.length === 0 ? (
                             <span className="text-sm text-gray-500">-</span>
                           ) : (
-                            discount.roomIDs.map((roomID) => (
+                            discount.roomNumbers.map((roomNumber, idx) => (
                               <span
-                                key={roomID}
+                                key={`${discount.discountID}-${idx}`}
                                 className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700"
                               >
-                                {roomID}
+                                {roomNumber}
                               </span>
                             ))
                           )}
@@ -216,8 +218,8 @@ export default function DiscountsPage() {
                       {isManager && <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <Link
-                            href={`/discounts/${discount.discountID}/edit`}
-                            className="rounded-lg bg-amber-500 px-3 py-1 text-sm text-white hover:bg-amber-600"
+                           href={`/discounts/${discount.discountID}/edit`}
+                           className="rounded-lg bg-amber-500 px-3 py-1 text-sm text-white hover:bg-amber-600"
                           >
                             Edit
                           </Link>
@@ -229,8 +231,6 @@ export default function DiscountsPage() {
                           </button>
                         </div>
                       </td>}
-
-
                     </tr>
                   ))
                 )}

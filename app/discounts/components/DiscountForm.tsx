@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 interface Room {
   roomID: string;
@@ -53,7 +54,7 @@ export default function DiscountForm({
   useEffect(() => {
     const loadRooms = async () => {
       try {
-        const res = await fetch("/api/rooms", { cache: "no-store" });
+        const res = await fetch("/api/rooms?admin=true", { cache: "no-store" });
         const data = await res.json();
         setRooms(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -64,20 +65,20 @@ export default function DiscountForm({
     loadRooms();
   }, []);
 
-const handleInputChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-) => {
-  const target = e.target;
-  const { name } = target;
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const target = e.target;
+    const { name } = target;
 
-  setForm((prev) => ({
-    ...prev,
-    [name]:
-      target instanceof HTMLInputElement && target.type === "checkbox"
-        ? target.checked
-        : target.value,
-  }));
-};
+    setForm((prev) => ({
+      ...prev,
+      [name]:
+        target instanceof HTMLInputElement && target.type === "checkbox"
+          ? target.checked
+          : target.value,
+    }));
+  };
 
   const handleRoomToggle = (roomID: string) => {
     setForm((prev) => ({
@@ -154,18 +155,17 @@ const handleInputChange = (
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          {editingId ? "Edit Discount" : "Create Discount"}
-        </h2>
-
+      <div className="mb-8 flex items-center gap-4">
         <button
           type="button"
           onClick={() => router.push("/discounts")}
-          className="rounded-lg border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50"
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
         >
-          Back
+          <ArrowLeft className="text-gray-600" size={24} />
         </button>
+        <h2 className="text-2xl font-bold text-gray-800">
+          {editingId ? "Edit Discount" : "Create Discount"}
+        </h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -240,7 +240,7 @@ const handleInputChange = (
           </div>
         </div>
 
-     
+
 
         <div>
           <label className="block font-bold uppercase text-gray-500 text-xs tracking-wider mb-2">Description</label>
@@ -307,8 +307,8 @@ const handleInputChange = (
           {loading
             ? "Saving..."
             : editingId
-            ? "Update Discount"
-            : "Create Discount"}
+              ? "Update Discount"
+              : "Create Discount"}
         </button>
       </form>
     </div>

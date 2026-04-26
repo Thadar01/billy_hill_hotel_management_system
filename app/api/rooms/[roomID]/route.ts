@@ -185,9 +185,17 @@ export async function PUT(
     await connection.commit();
 
     return NextResponse.json({ message: "Room updated successfully" });
-  } catch (error) {
+  } catch (error: any) {
     await connection.rollback();
     console.error("PUT Error:", error);
+    
+    // Handle duplicate room number error
+    if (error.code === 'ER_DUP_ENTRY') {
+      return NextResponse.json({ 
+        error: "Room number already exists. Please use a unique room number." 
+      }, { status: 400 });
+    }
+
     return NextResponse.json({ error: "Failed to update room" }, { status: 500 });
   } finally {
     connection.release();

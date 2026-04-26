@@ -67,7 +67,6 @@ export default function EditDiscountPage() {
   return (
     <Layout>
       <div className="text-black">
-        <h1 className="mb-6 text-3xl font-bold">Edit Discount</h1>
         <DiscountForm
           editingId={discount.discountID}
           initialData={{

@@ -17,7 +17,9 @@ export async function PATCH(
 
     const [rows] = await connection.query<RowDataPacket[]>(
       `
-      SELECT bookingID, customerID, bookingStatus
+      SELECT bookingID, customerID, bookingStatus, 
+             DATE_FORMAT(checkInDate, '%Y-%m-%d') AS checkInDate,
+             TIME_FORMAT(checkInTime, '%H:%i:%s') AS checkInTime
       FROM bookings
       WHERE bookingID = ?
       `,
@@ -58,6 +60,24 @@ export async function PATCH(
         },
         { status: 400 }
       );
+    }
+
+    // 24 hour restriction
+    if (booking.checkInDate) {
+      const checkInTimeStr = booking.checkInTime || "14:00:00";
+      const checkInDateTime = new Date(`${booking.checkInDate}T${checkInTimeStr}`);
+      const now = new Date();
+      
+      const diffMs = checkInDateTime.getTime() - now.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      if (diffHours < 24) {
+        await connection.rollback();
+        return NextResponse.json(
+          { error: "You cannot cancel a booking within 24 hours of check-in." },
+          { status: 400 }
+        );
+      }
     }
 
     await connection.query(

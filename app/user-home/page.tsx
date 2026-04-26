@@ -113,26 +113,6 @@ export default function UserHomePage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">Guests</label>
-                    <select className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500">
-                      <option>1 Guest</option>
-                      <option>2 Guests</option>
-                      <option>3 Guests</option>
-                      <option>4 Guests</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-sm font-medium">Room Type</label>
-                    <select className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500">
-                      <option>Standard</option>
-                      <option>Deluxe</option>
-                      <option>Suite</option>
-                    </select>
-                  </div>
-                </div>
 
                 <button
                   onClick={() => router.push(`/user-rooms?checkIn=${checkIn}&checkOut=${checkOut}`)}
@@ -221,8 +201,8 @@ export default function UserHomePage() {
                     <h3 className="text-xl font-semibold text-black">
                       {room.roomType}
                     </h3>
-                  
-                 
+
+
 
                     <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-500">
                       <span>{room.person} Guests</span>

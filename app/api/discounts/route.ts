@@ -30,11 +30,12 @@ export async function GET() {
       `
     );
 
-    const [discountRooms] = await pool.query<DiscountRoomRow[]>(
+    const [discountRooms] = await pool.query<any[]>(
       `
-      SELECT discountID, roomID
-      FROM discount_rooms
-      ORDER BY discountID ASC
+      SELECT dr.discountID, dr.roomID, r.roomNumber
+      FROM discount_rooms dr
+      JOIN rooms r ON dr.roomID = r.roomID
+      ORDER BY dr.discountID ASC
       `
     );
 
@@ -44,6 +45,9 @@ export async function GET() {
       roomIDs: discountRooms
         .filter((item) => item.discountID === discount.discountID)
         .map((item) => item.roomID),
+      roomNumbers: discountRooms
+        .filter((item) => item.discountID === discount.discountID)
+        .map((item) => item.roomNumber),
     }));
 
     return NextResponse.json({ discounts: formattedDiscounts });
@@ -145,7 +149,7 @@ export async function POST(req: NextRequest) {
       `
       INSERT INTO discounts
       (discountName, discountType, discountValue, startDate, endDate, description, isActive)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
       [
         discountName,

@@ -23,7 +23,7 @@ export default function ServiceForm({ initialData, onSubmit }: ServiceFormProps)
   const [formData, setFormData] = useState({
     serviceName: initialData?.serviceName || "",
     description: initialData?.description || "",
-    price: initialData?.price || "",
+    price: initialData?.price ? Math.floor(Number(initialData.price)) : "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -40,7 +40,7 @@ export default function ServiceForm({ initialData, onSubmit }: ServiceFormProps)
       alert("Please Fill all the required fields");
       return;
     }
-    
+
     setLoading(true);
     setError("");
 
@@ -50,36 +50,37 @@ export default function ServiceForm({ initialData, onSubmit }: ServiceFormProps)
         description: formData.description.trim(),
         price: parseFloat(formData.price as string),
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save service");
+      router.push("/admin/premium-services");
+    } catch (err: any) {
+      setError(err.message || "Failed to save service");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto text-black">
-      <button
-        type="button"
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
-      >
-        <ArrowLeft size={20} />
-        Back
-      </button>
-
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold mb-6">
-          {initialData ? "Edit Service" : "Add New Service"}
-        </h2>
+    <form onSubmit={handleSubmit} className="max-w-4xl mx-auto text-black">
+      <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <ArrowLeft className="text-gray-600" size={24} />
+          </button>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {initialData ? "Edit Premium Service" : "Add New Premium Service"}
+          </h2>
+        </div>
 
         {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-2">
+            <span className="text-sm font-medium">{error}</span>
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Service Name */}
           <div>
             <label className={`block font-bold uppercase tracking-wider mb-2 ${attemptedSubmit && !formData.serviceName.trim() ? "text-red-500" : "text-gray-500 text-sm"}`}>
@@ -91,7 +92,7 @@ export default function ServiceForm({ initialData, onSubmit }: ServiceFormProps)
               value={formData.serviceName}
               onChange={handleChange}
               className={`w-full px-4 py-3 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black ${attemptedSubmit && !formData.serviceName.trim() ? "border-red-500 bg-red-50" : "border-gray-200"}`}
-              placeholder="e.g., Spa Treatment"
+              placeholder="e.g., Airport Transfer"
             />
           </div>
 
@@ -114,7 +115,7 @@ export default function ServiceForm({ initialData, onSubmit }: ServiceFormProps)
 
           {/* Description */}
           <div>
-            <label className="block font-bold uppercase text-gray-500 text-sm tracking-wider mb-2">
+            <label className="block font-bold uppercase tracking-wider mb-2 text-gray-500 text-sm">
               Description
             </label>
             <textarea
@@ -122,8 +123,8 @@ export default function ServiceForm({ initialData, onSubmit }: ServiceFormProps)
               rows={4}
               value={formData.description}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-black transition-all"
-              placeholder="Describe the service, benefits, duration, etc."
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/20 text-black"
+              placeholder="Briefly describe the service..."
             />
           </div>
         </div>
@@ -134,7 +135,7 @@ export default function ServiceForm({ initialData, onSubmit }: ServiceFormProps)
             disabled={loading}
             className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg transition-all flex items-center justify-center gap-2"
           >
-            <Save size={20} />
+            
             {loading ? "Saving..." : initialData ? "Update Service" : "Create Service"}
           </button>
           <button

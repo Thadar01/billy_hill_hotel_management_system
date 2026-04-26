@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
     let queryParams: any[] = [];
 
     if (isAdmin) {
-      queryStr = `SELECT * FROM rooms r`;
+      queryStr = `SELECT * FROM rooms r ORDER BY r.floor ASC, CAST(r.roomNumber AS UNSIGNED) ASC`;
       queryParams = [];
     } else {
       queryStr = `
@@ -87,6 +87,7 @@ export async function GET(req: NextRequest) {
             WHERE b.bookingStatus IN ('pending', 'confirmed', 'checked_in')
               AND (b.checkInDate < ? AND b.checkOutDate > ?)
           )
+        ORDER BY r.floor ASC, CAST(r.roomNumber AS UNSIGNED) ASC
       `;
       queryParams = [checkIn, today, checkOut, checkIn];
     }
@@ -233,8 +234,16 @@ export async function POST(req: NextRequest) {
       message: "Room created successfully",
       roomID: roomID
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("POST Error:", error);
+    
+    // Handle duplicate room number error
+    if (error.code === 'ER_DUP_ENTRY') {
+      return NextResponse.json({ 
+        error: "Room number already exists. Please use a unique room number." 
+      }, { status: 400 });
+    }
+
     return NextResponse.json({ 
       error: "Failed to create room", 
       details: error instanceof Error ? error.message : String(error) 

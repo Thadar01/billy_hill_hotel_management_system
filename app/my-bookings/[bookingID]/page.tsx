@@ -142,6 +142,27 @@ export default function BookingDetailPage() {
   const [mounted, setMounted] = useState(false);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ phone: "", specialRequest: "", note: "" });
+  const [updating, setUpdating] = useState(false);
+
+  useEffect(() => {
+    if (data?.booking) {
+      setEditForm({
+        phone: data.booking.phone || "",
+        specialRequest: data.booking.specialRequest || "",
+        note: data.booking.note || "",
+      });
+    }
+  }, [data?.booking]);
+
+  const isWithin24Hours = data?.booking?.checkInDate ? (() => {
+    const checkInTimeStr = data.booking.checkInTime || "14:00:00";
+    const checkInDateTime = new Date(`${data.booking.checkInDate}T${checkInTimeStr}`);
+    const diffMs = checkInDateTime.getTime() - new Date().getTime();
+    return (diffMs / (1000 * 60 * 60)) < 24;
+  })() : false;
+
   useEffect(() => {
     setMounted(true);
     if (!bookingID) {
@@ -255,6 +276,35 @@ export default function BookingDetailPage() {
     }
   };
 
+  const handleUpdateDetails = async () => {
+    try {
+      if (!customer?.customerID) return;
+      setUpdating(true);
+      const res = await fetch(`/api/bookings/${bookingID}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerID: customer.customerID,
+          phone: editForm.phone,
+          specialRequest: editForm.specialRequest,
+          note: editForm.note,
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to update booking details");
+
+      alert("Booking details updated successfully!");
+      setIsEditing(false);
+      await fetchBookingDetail();
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "Failed to update booking details");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (!customer?.customerID && !loading) {
     return (
       <UserLayout>
@@ -320,13 +370,24 @@ export default function BookingDetailPage() {
 
           <div className="flex gap-3">
             {booking.bookingStatus === "confirmed" && (
-              <button
-                onClick={handleCancelBooking}
-                disabled={cancelling}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
-              >
-                {cancelling ? "Cancelling..." : "Cancel Booking"}
-              </button>
+              <>
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  disabled={isWithin24Hours}
+                  className="border border-blue-600 text-blue-600 px-4 py-2 rounded-lg disabled:opacity-50"
+                  title={isWithin24Hours ? "Updates are not allowed within 24 hours of check-in." : ""}
+                >
+                  {isEditing ? "Cancel Edit" : "Update Details"}
+                </button>
+                <button
+                  onClick={handleCancelBooking}
+                  disabled={cancelling || isWithin24Hours}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+                  title={isWithin24Hours ? "Cancellations are not allowed within 24 hours of check-in." : ""}
+                >
+                  {cancelling ? "Cancelling..." : "Cancel Booking"}
+                </button>
+              </>
             )}
 
             <Link
@@ -338,8 +399,7 @@ export default function BookingDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 space-y-6">
+        <div className="space-y-6">
             <div className="bg-white shadow rounded-2xl p-5">
               <h2 className="text-xl font-semibold mb-4">Booking Information</h2>
 
@@ -394,18 +454,68 @@ export default function BookingDetailPage() {
                 </div>
               </div>
 
-              {booking.specialRequest && (
-                <div className="mt-5">
-                  <p className="text-gray-500 text-sm">Special Request</p>
-                  <p className="font-medium">{booking.specialRequest}</p>
+              {isEditing ? (
+                <div className="mt-6 border-t pt-6 space-y-4">
+                  <h3 className="font-semibold mb-2">Update Details</h3>
+                  <div>
+                    <label className="block text-sm text-gray-500 mb-1">Phone</label>
+                    <input
+                      type="text"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-500 mb-1">Special Request</label>
+                    <textarea
+                      value={editForm.specialRequest}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, specialRequest: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                      rows={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-500 mb-1">Note</label>
+                    <textarea
+                      value={editForm.note}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, note: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3 mt-4">
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="px-4 py-2 text-sm border rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleUpdateDetails}
+                      disabled={updating}
+                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50"
+                    >
+                      {updating ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
                 </div>
-              )}
+              ) : (
+                <>
+                  {booking.specialRequest && (
+                    <div className="mt-5">
+                      <p className="text-gray-500 text-sm">Special Request</p>
+                      <p className="font-medium">{booking.specialRequest}</p>
+                    </div>
+                  )}
 
-              {booking.note && (
-                <div className="mt-3">
-                  <p className="text-gray-500 text-sm">Note</p>
-                  <p className="font-medium">{booking.note}</p>
-                </div>
+                  {booking.note && (
+                    <div className="mt-3">
+                      <p className="text-gray-500 text-sm">Note</p>
+                      <p className="font-medium">{booking.note}</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -476,6 +586,10 @@ export default function BookingDetailPage() {
               )}
             </div>
 
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="space-y-6">
             <div className="bg-white shadow rounded-2xl p-5">
               <h2 className="text-xl font-semibold mb-4">Payments</h2>
 
