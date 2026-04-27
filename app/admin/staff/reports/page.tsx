@@ -185,40 +185,7 @@ export default function StaffEfficiencyReport() {
         {/* Charts + Insight */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Chart */}
-          <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-xl font-bold flex items-center gap-2 mb-8">
-              <BarChart3 className="text-blue-600" />
-              Labor Cost Trend
-            </h3>
 
-            <div className="h-64 flex items-end gap-2">
-              {data.dailyStats.length === 0 ? (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 italic">
-                  No cost data available
-                </div>
-              ) : (
-                data.dailyStats.map((s, i) => {
-                  const height = (s.cost / maxCost) * 100;
-
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="relative w-full h-full flex flex-col justify-end">
-                        <div
-                          className="w-full bg-blue-100 rounded-t-lg transition-all duration-300"
-                          style={{ height: `${height}%` }}
-                        />
-                      </div>
-
-                      <span className="text-[10px] text-gray-400 rotate-45 origin-left">
-                        {s.date.split("-").slice(1).join("/")}
-                      </span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
 
         </div>
       </div>

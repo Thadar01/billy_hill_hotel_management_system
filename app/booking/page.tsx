@@ -75,6 +75,13 @@ export default function BookingPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
+  // Maximum check-in date is 30 days from now
+  const maxCheckInDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return d.toISOString().split("T")[0];
+  }, []);
+
   const initialCheckIn = searchParams.get("checkIn") || "";
   const initialCheckOut = searchParams.get("checkOut") || "";
 
@@ -310,6 +317,11 @@ export default function BookingPage() {
       return false;
     }
 
+    if (checkInDate > maxCheckInDate) {
+      alert("Check-in date must be within 30 days from today.");
+      return false;
+    }
+
     if (!checkInTime || !checkOutTime) {
       alert("Please select check-in and check-out times");
       return false;
@@ -400,10 +412,12 @@ export default function BookingPage() {
                   <input
                     type="date"
                     min={today}
+                    max={maxCheckInDate}
                     value={checkInDate}
                     onChange={(e) => setCheckInDate(e.target.value)}
                     className="w-full border rounded-lg px-3 py-2"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Bookings can be made up to 30 days in advance.</p>
                 </div>
 
                 <div>

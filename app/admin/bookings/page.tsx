@@ -369,7 +369,7 @@ export default function AdminBookingsPage() {
                     </td>
                     <td className="sticky right-0 bg-white z-10 px-4 py-3 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]">
                       <div className="flex flex-nowrap items-center gap-2">
-                        {booking.bookingStatus === "confirmed" && (
+                        {booking.bookingStatus === "confirmed" && isManager && (
                           <button
                             onClick={() => handleCheckIn(booking.bookingID)}
                             disabled={processingID === booking.bookingID}
