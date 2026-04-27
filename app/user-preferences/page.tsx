@@ -141,7 +141,7 @@ export default function UserPreferencesPage() {
 
   return (
     <UserLayout>
-      <div className="mx-auto max-w-5xl px-4 py-12">
+      <div className="mx-auto max-w-5xl px-4 py-12 text-black">
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
           <div className="mb-8 flex items-center justify-between">
             <div>

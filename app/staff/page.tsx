@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
+import { Clock } from "lucide-react";
 
 interface Staff {
   staff_id: string;
@@ -249,29 +250,54 @@ export default function StaffPage() {
                       {/* Performance Stats */}
                       <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
                         <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Last 30 Days Cycle</h4>
-                        {fetchingExtra === staff.staff_id ? (
-                          <div className="animate-pulse space-y-4">
-                            <div className="h-6 bg-gray-200 rounded w-full"></div>
-                            <div className="h-6 bg-gray-200 rounded w-full"></div>
-                          </div>
-                        ) : performanceData[staff.staff_id] ? (
-                          <div className="grid grid-cols-3 gap-4 text-left">
-                            <div>
-                              <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Worked</div>
-                              <div className="text-xl font-semibold text-gray-900">{performanceData[staff.staff_id].stats.totalWorkedHours}h</div>
-                            </div>
-                            <div>
-                              <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Overtime</div>
-                              <div className="text-xl font-semibold text-gray-900">{(performanceData[staff.staff_id].stats.totalOvertimeMinutes / 60).toFixed(1)}h</div>
-                            </div>
-                            <div>
-                              <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Late Arrival</div>
-                              <div className="text-xl font-semibold text-gray-900">{(performanceData[staff.staff_id].stats.totalLateMinutes / 60).toFixed(1)}h</div>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-xs text-gray-500 italic py-4">No attendance data recorded in this period</p>
-                        )}
+                        {(() => {
+                          const staffRole = getRoleName(staff.role_id).toLowerCase();
+                          const isExempt = ["finance staff", "general manager", "staff manager", "finance manager"].includes(staffRole);
+
+                          if (isExempt) {
+                            return (
+                              <div className="flex items-center gap-3 py-4">
+                                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                  <Clock size={16} />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">Fixed Salary Role</p>
+                                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">No hourly tracking required</p>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          if (fetchingExtra === staff.staff_id) {
+                            return (
+                              <div className="animate-pulse space-y-4">
+                                <div className="h-6 bg-gray-200 rounded w-full"></div>
+                                <div className="h-6 bg-gray-200 rounded w-full"></div>
+                              </div>
+                            );
+                          }
+
+                          if (performanceData[staff.staff_id]) {
+                            return (
+                              <div className="grid grid-cols-3 gap-4 text-left">
+                                <div>
+                                  <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Worked</div>
+                                  <div className="text-xl font-semibold text-gray-900">{performanceData[staff.staff_id].stats.totalWorkedHours}h</div>
+                                </div>
+                                <div>
+                                  <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Overtime</div>
+                                  <div className="text-xl font-semibold text-gray-900">{(performanceData[staff.staff_id].stats.totalOvertimeMinutes / 60).toFixed(1)}h</div>
+                                </div>
+                                <div>
+                                  <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Late Arrival</div>
+                                  <div className="text-xl font-semibold text-gray-900">{(performanceData[staff.staff_id].stats.totalLateMinutes / 60).toFixed(1)}h</div>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          return <p className="text-xs text-gray-500 italic py-4">No attendance data recorded in this period</p>;
+                        })()}
                       </div>
                     </div>
 

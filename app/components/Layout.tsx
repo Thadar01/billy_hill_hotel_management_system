@@ -101,7 +101,7 @@ export default function Layout({ children }: LayoutProps) {
       : "px-4 py-2 rounded hover:bg-gray-100 text-black";
 
   const renderLink = (href: string, label: string) => {
-    if (isGM || href === "/staff-dashboard" || href === "/staff/settings") {
+    if (isGM || href === "/staff/settings") {
       return (
         <Link href={href} className={navClass(href)}>
           {label}
