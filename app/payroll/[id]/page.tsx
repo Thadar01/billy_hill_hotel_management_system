@@ -111,23 +111,23 @@ export default function ReceiptPage() {
 
               <p>
                 <strong>Base Pay:</strong>{" "}
-                ${payroll.base_pay.toLocaleString()}
+                MMK{payroll.base_pay.toLocaleString()}
               </p>
 
               <p>
                 <strong>Overtime Pay:</strong>{" "}
-                ${payroll.overtime_pay.toLocaleString()}
+                MMK{payroll.overtime_pay.toLocaleString()}
               </p>
 
               <p>
                 <strong>Late Deduction:</strong>{" "}
-                -${payroll.late_deduction.toLocaleString()}
+                -MMK{payroll.late_deduction.toLocaleString()}
               </p>
 
               <hr className="my-3" />
 
               <p className="text-lg font-bold">
-                Gross Pay: $
+                Gross Pay: MMK
                 {payroll.gross_pay.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                 })}

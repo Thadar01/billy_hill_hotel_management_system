@@ -57,7 +57,7 @@ export default function UserHomePage() {
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
           <div className="flex flex-col justify-center">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">
-              Welcome to RoyalStay Hotel
+              Welcome to Billy Hill Hotel
             </p>
             <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
               Book Your Perfect Stay With Comfort and Luxury

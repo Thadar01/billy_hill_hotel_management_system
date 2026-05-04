@@ -77,6 +77,7 @@ export default function RoomCard({
   const normalizedRole = roleName.toLowerCase();
   const isStaff = ["staff manager", "housekeeping", "receptionist"].includes(normalizedRole);
 
+    const isManager = ["general manager"].includes(normalizedRole);
 
   const statusConfig = {
     available: {
@@ -351,20 +352,23 @@ export default function RoomCard({
             <Eye size={16} />
             View
           </Link>
-          <Link
+          {isManager &&     <Link
             href={`/rooms/edit/${room.roomID}`}
             className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-100 px-3 py-2 text-blue-700 transition-colors hover:bg-blue-200"
           >
             <Pencil size={16} />
             Edit
-          </Link>
-          <button
+          </Link>}
+
+          {isManager &&     <button
             onClick={() => onDelete(room.roomID)}
             className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-100 px-3 py-2 text-red-700 transition-colors hover:bg-red-200"
           >
             <Trash2 size={16} />
             Delete
-          </button>
+          </button>}
+      
+      
         </div>
       </div>
     </div>

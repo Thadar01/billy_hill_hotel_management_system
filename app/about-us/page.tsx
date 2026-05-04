@@ -11,7 +11,7 @@ export default function AboutUsPage() {
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-bold text-black">About Us</h1>
             <p className="mt-4 text-lg text-gray-600">
-              Welcome to RoyalStay Hotel, a place where comfort, care, and
+              Welcome to Billy Hill Hotel, a place where comfort, care, and
               hospitality come together for every guest.
             </p>
           </div>
@@ -21,7 +21,7 @@ export default function AboutUsPage() {
               <div className="relative h-[350px] w-full bg-gray-200">
                 <Image
                   src="/images/hotel-about2.jpg"
-                  alt="RoyalStay Hotel building"
+                  alt="Billy Hill Hotel building"
                   fill
                   className="object-cover"
                 />
@@ -36,7 +36,7 @@ export default function AboutUsPage() {
                 Serving Guests With Care Since 2013
               </h2>
               <p className="mt-4 leading-7 text-gray-600">
-                RoyalStay Hotel has proudly welcomed guests since 2013. Over the
+                Billy Hill Hotel has proudly welcomed guests since 2013. Over the
                 years, we have focused on creating a relaxing and memorable stay
                 for travelers, families, and business guests.
               </p>
@@ -128,13 +128,13 @@ export default function AboutUsPage() {
               <div>
                 <h3 className="font-medium text-black">Address</h3>
                 <p className="mt-2 text-gray-600">
-                  RoyalStay Hotel, Yangon, Myanmar
+                  Billy Hill Hotel, Yangon, Myanmar
                 </p>
               </div>
 
               <div>
                 <h3 className="font-medium text-black">Email</h3>
-                <p className="mt-2 text-gray-600">contact@royalstayhotel.com</p>
+                <p className="mt-2 text-gray-600">contact@Billy Hillhotel.com</p>
               </div>
 
               <div>

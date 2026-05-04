@@ -243,7 +243,7 @@ export default function UserProfilePage() {
 
   return (
     <UserLayout>
-      <div className="mx-auto max-w-4xl px-4 py-12">
+      <div className="mx-auto max-w-4xl px-4 py-12 text-black">
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -267,10 +267,7 @@ export default function UserProfilePage() {
               <p className="mt-1 font-medium text-black">{profile.customerID}</p>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-zinc-50 p-5">
-              <p className="text-sm text-gray-500">Created At</p>
-              <p className="mt-1 font-medium text-black">{profile.createdAt}</p>
-            </div>
+
 
             <div className="rounded-xl border border-gray-200 bg-zinc-50 p-5">
               <p className="text-sm text-gray-500">Full Name</p>
